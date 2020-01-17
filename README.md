@@ -1,4 +1,4 @@
-## Welcome to GitHub Pages
+## Welcome to Jessica's page for STAT 184 at Penn State
 
 You can use the [editor on GitHub](https://github.com/jesslynne73/STAT-184/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 
