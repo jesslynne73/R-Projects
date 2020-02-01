@@ -1,0 +1,48 @@
+---
+title: "Markdown Class Schedule"
+author: "Jessica Strait"
+date: "January 31, 2020"
+output: 
+  html_notebook:
+    fig_height: 3
+    fig_width: 5
+---
+
+# Jessica's Favorite Classes in Spring 2020
+
+
+### STAT 318: Elementary Probability
+
+This class is an introduction to the theory of probability, covering topics such as logic, conditional probability, and properties of variables. I am taking this class with Professor Elizabeth Eisenhauer to support my major in Applied Data Sciences. The hardest concepts in the class have mostly been the calculus applications, but I really enjoy discrete mathematics and combinatorics so I don't mind the challenge.
+
+The PSU Canvas page for STAT 318 Section 001 is [linked here](https://psu.instructure.com/courses/2040565).
+
+When I was in high school, I always used Khan Academy to help me with my math. Since I will probably revisit the Khan Academy combinatorics review, I wanted to share [this page](https://www.khanacademy.org/math/statistics-probability/counting-permutations-and-combinations). 
+
+Here is a wordcloud image including many of the vocabulary terms that we use in statistics class.
+
+![](https://mavinlearning.com/wp-content/uploads/2018/02/canstockphoto6969679.jpg)
+
+### MICRB 201H: Introduction to Microbiology Honors
+
+This class is an introduction to microbiology in the context of bacterial functions and antibiotics, with CHEM 110 as a prerequisite rather than classic cell biology courses. I am taking this class with Dr. Steven Keating as a supporting course for my major in Applied Data Sciences because I selected Food Science as an application focus, which will eventually include 400-level courses such as Food Microbiology and Managing Food Quality. The honors coursework is a little more flexible and has allowed us to study interesting microbiology applications such as the role of ergotism in the Salem Witch Trials and the initial discovery of penicillin. 
+
+The PSU Canvas page for MICRB 201H Section 001 is [linked here](https://psu.instructure.com/courses/2032755).
+
+Check out [this academic paper](https://www.jstor.org/stable/27851542?seq=3#metadata_info_tab_contents) that we read early in the semester to learn about the potential explanation of ergotism as a factor in the Salem Witch Trials.
+
+Here is an image of what ergot-infected grain might look like.
+
+![](https://cropwatch.unl.edu/image/image_gallery/uuid%3D7f3423eb-d36a-452f-9cba-badd2f0de0d2%26groupId%3D1841%26t%3D1310155750411)
+
+### GEOG 6N: Maps and the Geospatial Revolution
+
+This class is an elective course about spatial analysis, fundamental cartography, and modern applications of geographic information science. I am taking this class with Professor Harrison Cole to satisfy interdomain and general science requirements for Penn State undergraduates. Professor Cole is hilarious (and supposedly famous on Cartography Twitter) and very interested in the material, and he makes cartography accessible by showing its applications to different areas of knowledge such as disaster management, transportation planning, and demographic marketing.
+
+The PSU Canvas page for GEOG 6N Section 001 is [linked here](https://psu.instructure.com/courses/2052231).  
+
+You can see a very basic map of my hometown that I made for a lab last week [at this ArcGIS link](https://arcg.is/8Paja).  
+
+Here is a pretty cool map of global shipping patterns that Professor Cole showed us in lecture.
+![](https://moverdb.com/wp-content/uploads/shipping-density-map.jpg)
+
