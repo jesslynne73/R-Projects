@@ -22,3 +22,5 @@ Syntax highlighted code block
 **Bold** and _Italic_ and `Code` text
 
 [Link](url) and ![Image](src)
+```
+You can see the nb.html version of the .Rmd file at [this link](file:///C:/Users/jessl/Documents/activity-markdown-class-schedule-jesslynne73/J.%20Strait%20Markdown%20Activity.nb.html)
