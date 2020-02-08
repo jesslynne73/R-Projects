@@ -1,0 +1,61 @@
+---
+title: "Activity: Graphical Exploration"
+author: "Jessica Strait & Zach Struthers"
+date: "Due Date: 2-11-20"
+output: html_notebook
+---
+
+
+
+## Front Matter
+
+Install supporting R packages with necessary functions and data sets.  You will need to add `library(DataComputing)` to the code chunk.  Note the line `rm(list = ls())` at the beginning of the code chunk, this will effectively reset your R environment which can help avoid bugs when an analysis gets more complicated.  
+
+
+```{r} 
+rm(list = ls())      # cleans up your R environment
+
+# load packages
+library(DataComputing)
+library(mosaic)
+library(tidyverse)   # loads a group of useful packages including `ggplot2`
+
+
+```
+
+
+### Explore the `diamonds` data
+
+*Task: Use R to produce one informative graphic of the `diamonds` data.  The graphic should represent AT LEAST 3 variables.  Write a few sentences to describe what we can learn from the graphic your have provided.  (Note: do NOT write your narrative inside the code chunk.)*
+
+
+```{r}
+# read `diamonds` data into R; it has been provided by the `ggplot2` package
+data("diamonds", package = "ggplot2")
+?diamonds
+
+# add your code below for your one key data visualization
+library(ggplot2)
+ggplot(diamonds) + geom_point(aes(x=carat, y=price, size=cut, color=clarity))
+
+```
+From this scatterplot of information about the diamonds, we can make some inferences about factors that generally make certain diamonds more expensive. The two primary (x and y axis) variables that I selected were price and carat, which can be seen in the scatterplot to have a strong positive correlation. Generally, diamonds with a higher carat value tend to cost more. However, with diamonds at approximately the same carat value, the scatterplot also shows some other variables that can affect price. Color on the graph represents clarity, and a viewer can tell that at a given carat value, improved clarity adds to the price of the diamond. A similar but weaker positive correlation exists between price and the cut of a diamond- it should be noted that some diamonds with poor clarity have the most ideal cuts, perhaps reflecting a producer tactic of increasing diamond value by taking care with the cut. Similarly, some of the diamonds with large carat values have only fair cuts or low clarities, suggesting that producers may be reluctant to alter an already valuable diamond with respect to these other variables.
+
+
+### Explore the cereal data
+
+*Task: Use R to produce one informative graphic of the `cereal.csv` data.  The graphic should represent AT LEAST 3 variables.  Write a few sentences to describe what we can learn from the graphic your have provided. (Note: do NOT write your narrative inside the code chunk.)*
+
+
+```{r}
+# read CSV data set into R
+CerealData <- read.csv(file = "cereal.csv")  
+View(CerealData)
+# add your code below for your one key data visualization
+library(ggplot2)
+cerealtype <- CerealData$type
+ggplot(CerealData) + geom_point(aes(x=sugars, y=calories, size=fat, color=mfr)) + geom_text(aes(x=sugars, y=calories, label=cerealtype))
+
+```
+
+This scatterplot "looks" less continuous than the diamond data, primarily due to the use of the sugars variable across the x axis. This gives us a better look at different characteristics of cereals across exact gram values for sugar. It is clear that high sugar content correlates positively to high calorie content. Additionally, the low sugar cereals also tend to be low fat as represented by the size of each glyph. The color, representing manufacturers, show that Kellogg's and General Mills manufacture many cereals, both of high and low sugar content (though Kellogg's seems to lead the very high sugar market). Finally, by using the geom_text feature, we are able to label each point as a hot or cold cereal. This shows that hot cereals tend to be lower sugar and somewhat lower calorie, possibly pointing towards the nutritional priorities of the demographic that consumes hot cereals regularly.
