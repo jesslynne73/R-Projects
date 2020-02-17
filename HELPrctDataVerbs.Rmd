@@ -1,0 +1,129 @@
+---
+title: "HELPrct (Data Verbs) Activity"
+author: "Jessica Strait & Jonathan Sguera"
+date: "2-18-20"
+output: html_notebook
+---
+
+
+## Set Up:
+
+```{r}
+# load packages
+library(tidyverse)  # includes lots of data verbs like `group-by()` and `summarise()`
+library(mosaicData) # includes the `HELPrct data set 
+library(mosaic)     # includes the `mplot()` interactive plot 
+library(DataComputing)
+# Load the HELPrct data set into our RStudio environment
+data("HELPrct")
+```
+
+
+## Data Description
+
+*Task 1: Write a couple of sentences describing the `HELPrct` data--What is the setting for the data? What are they about?* 
+
+This data is a clinical trial for patients from a detoxification unit or rehab facility. The goal of this study was to collect data from rehab patients in the HELP clinic and to find patients that do not have a primary care physician. 
+
+
+## Basic Summaries with `summarise()` 
+```{r}
+data1 <- HELPrct %>%
+  summarise(n = n(), avgage=mean(age))
+data1
+```
+
+
+*Task 2: Produce an expression involving `summarize()` and `HELPrct` that will produce the following.*
+
+- *number of people (cases) in `HELPrct` study*
+- *combined total number of times in the past 6 months all the people in `HELPrct` entered a detox program (measured at baseline)* 
+- *mean time (in days) to first use of any substance post-detox for all the people in `HELPrct`*
+
+
+```{r}
+data2 <- HELPrct %>%
+  dplyr::select(e2b, daysanysub) %>%
+  summarize(count = count(e2b), mean=mean(daysanysub, na.rm= T))
+data2
+```
+
+
+## Subgrouping with `group_by()` 
+
+*Task 2: Repeat task 1 above, but calculate the results group-by-group.  Show your code and write a sentence or two about what you observe in the results for each of the following:* 
+```{r}
+data3 <- HELPrct %>%
+  group_by(anysub) %>%
+  summarise(n = n(), avgage=mean(age))
+data3
+```
+
+This data presents information both about the number of individuals in the detoxification project who were substance abusers and their age distribution. The mean ages both for substance abusers and non-substance abusers were in the mid-thirties. Additionally, more individuals participating in the detoxification project reported substance abuse than reported no substance abuse.
+
+1. *males versus females*
+
+```{r}
+data4 <- HELPrct %>%
+  group_by(sex) %>%
+  summarise(n = n())
+data4
+```
+
+This data shows that more men than women are represented in the dataset, meaning that significantly more men than women were taking part in this detoxification project and also did not have a primary care physician.
+
+2. *homeless or not*
+
+```{r}
+data5 <- HELPrct %>%
+  group_by(homeless) %>%
+  summarise(n = n())
+data5
+```
+
+This data shows that more participants in the detoxification project reported housing than homelessness.
+
+3. *substance*
+
+```{r}
+data6 <- HELPrct %>%
+  group_by(substance) %>%
+  summarise(n = n())
+data6
+```
+
+This data shows that of the individuals who abuse substances, most reported alcohol use, slightly less reported cocaine use, and the least participants reported heroin use.
+
+4. *break down the homeless versus housed further, by sex*
+
+```{r}
+data7 <- HELPrct %>%
+  group_by(homeless, sex) %>%
+  summarise(n = n())
+data7
+```
+
+This data indicates that when divided by sex, a larger proportion of men were homeless than women.
+
+5. *break down the homeless versus housed further, by substance*
+
+```{r}
+data8 <- HELPrct %>%
+  group_by(homeless, substance) %>%
+  summarise(n = n())
+data8
+```
+
+This data shows that alcohol is the most commonly abused substance among homeless individuals, and that cocaine is the most commonly abused substance among housed individuals.
+
+## Task 3:
+
+*Include one or more interesting plots of the data involving at least 3 variables per plot. Write a few sentances to explain the story that your plot tells about these data.  You can use one of the relationships that you studied in Task 2, or you can explore a different group of variables in the HELPrct that show something interesting.*  
+
+
+
+```{r}
+ggplot(data=HELPrct,aes(x=cesd,y=mcs))+geom_point()+aes(colour=substance)+aes(size=g1b)+facet_wrap(~sex,ncol=4)
+```
+
+This scatterplot shows various relationships between different components of the HELPrct data package, and allows us to identify correlation between several variables. Firstly, there is a clear negative relationship between mcs (SF-36 Mental Component Score) and cesd (Center for Epidemiologic Studies Depression measure). The mcs value includes a number of personal emotional measures such as vitality, social function, and most importantly, mental health. Therefore, if a person exhibits unusually low mental health scores, as one who is measured as having a high measure of depression would, it makes sense that their overall mental component score would be low. There is not a significant difference in cesd distribution between men and women; however, there are more men in general who appear on this graph as abusing substances and experiencing mental health issues. The substance distribution gives some information about abuse practices, particularly that more men do heroin and more women do cocaine. The g1b variable is a discrete measure of whether or not the individual has expereinced suicidal thoughts in the last 30 days. This scatterplot shows that individuals with lower mental component scores and higher depression measure report more suicidal thoughts.
