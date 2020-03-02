@@ -1,0 +1,156 @@
+
+---
+title: "Activity: Bird Species"
+author: "Jessica Strait"
+date: "3-3-20"
+output: html_notebook
+---
+
+
+# Set Up
+
+```{r}
+# Load `tidyverse` and `DataComputing` packages
+library(tidyverse)
+library(DataComputing)
+
+
+# Load the `OrdwayBirds` data set into your RStudio environment from the `DataComputing` package
+
+OrdwayBirds
+View(OrdwayBirds)
+
+# Show a few commands used to inspect the data set a few different ways
+
+summary(OrdwayBirds)
+names(OrdwayBirds)
+count(OrdwayBirds)
+```
+
+# Activity
+
+When you're finished with this activity, you will have a graph that shows what time of year various species appear at the Katherine Ordway Natural History Study Area in Inver Grove Heights, MN.
+
+### Step 0
+
+Before we begin, the book gives us some instructions to select a few key variables and clean up the date formatting.  Use the commands given in the book, but be sure to study the functions used so you know what is happening.  In this case, we select `SpeciesName`, `Month`, and `Day`. Then a `mutate()` command converts each variable to character, and then converts the resulting "character string" to a number.
+
+```{r}
+# Get the data table & clean up dates (see Data Computing eBook)
+
+OrdwayBirds <-
+  OrdwayBirds %>%
+  select(SpeciesName, Month, Day) %>%
+  mutate(Month = as.numeric(as.character(Month)), 
+          Day = as.numeric(as.character(Day)))
+
+# Inspect resulting data
+
+summary(OrdwayBirds)
+names(OrdwayBirds)
+
+```
+
+
+
+### Step 1
+
+
+```{r}
+# unique species in original data (including mis-spellings)
+OrdwayBirds %>% group_by(SpeciesName) %>% count(SpeciesName) %>% nrow()
+
+
+# unique species in the clean list
+OrdwaySpeciesNames %>% n_distinct("SpeciesNameCleaned")
+
+```
+
+
+### Step 2
+
+
+```{r}
+# inspect OrdwaySpeciesNames
+names(OrdwaySpeciesNames)
+summary(OrdwaySpeciesNames)
+
+# inner join
+Corrected <-
+  OrdwayBirds %>%
+  inner_join(OrdwaySpeciesNames) %>% 
+  select( Species = SpeciesNameCleaned, Month, Day ) %>%
+  na.omit()
+
+# inspect the data after the join
+names(Corrected)
+summary(Corrected)
+View(Corrected)
+
+```
+The "SpeciesName" and "SpeciesNameCleaned" variables were used for joining, and the variable "Species" was used to rename the combined column.
+
+### Step 3
+
+We want to identify the top 5-6 bird species sighted at the Katherine Ordway Natural History Study Area.
+
+```{r}
+# count sightings by species in descending order
+Corrected %>% group_by(Species) %>% count(Species) %>% arrange(desc(n))
+
+# a hint on p.164 recommends displaying the top 10 species to choose our threshold
+
+Corrected %>% group_by(Species) %>% count(Species) %>% arrange(desc(n)) %>% head(10)
+
+# define a sightings threshold; produce a table with only birds belonging to major species
+Majors <- Corrected %>% group_by(Species) %>% mutate(total = n()) %>% filter(total > 1000)
+Majors <- unique(Majors)
+Majors
+
+```
+
+
+### Step 4
+
+We now want to produce a month-by-month count for each of the major species, and then construct a chart to tell the story of what time of year the various species appear.
+
+```{r}
+# prepare glyph-ready data table called `ByMonth`
+ByMonth <- Majors %>% select(Species, Month) %>% group_by(Species, Month) %>% summarise(monthlytotal = n())
+ByMonth
+```
+
+Now, using `barGraphHelper()` in the console, we can configure a reasonable graph and choose "show expression" to get `ggplot2` that can be embedded in our report.
+
+
+
+```{r}
+# ggplot command
+ggplot(data=ByMonth,aes(x=Month,y=monthlytotal,fill=Species))+geom_bar(stat='identity',position='stack', width=.9)+ facet_wrap(~Species,ncol=3) + scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12))
+
+```
+
+According to the graph, we can answer the questions posed:
+
+##### 1. Which species are present year-round?  
+
+The American Goldfinch and the Black-Capped Chickadee are present year-round.
+
+##### 2. Which species are migratory, that is, primarily present in one or two seasons?
+
+The Field Sparrow, Slate-Colored Junco, and Tree Swallow are migratory.
+
+##### 3. What is the peak month for each major species? (bullet list)
+
+* American Goldfinch: October
+* Black-Capped Chickadee: October
+* Field Sparrow: May
+* Slate-Colored Junco: March/October
+* Tree Swallow: March
+
+##### 4. Which major species are seen in good numbers for at least 6 months of the year?
+
+The Black-Capped Chickadee and Slate-Colored Junco are seen in good numbers (i.e. more than 22 sightings) for at least 6 months of the year.
+
+
+
