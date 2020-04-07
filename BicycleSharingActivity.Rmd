@@ -1,0 +1,168 @@
+---
+title: "Bicycle Sharing Activity"
+author: "Jessica Strait"
+date: "3-17-20"
+output: 
+    html_notebook:
+    fig_height: 6
+    fig_width: 10
+---
+
+# Set Up
+
+### Clean up environment and load packages
+```{r}
+# clean up the RStudio environment 
+rm(list = ls())
+
+# load all packages here: `mosaic`, `tidyverse`, `lubridate`, and all others used
+library(mosaic)
+library(tidyverse)
+library(DataComputing)
+library(lubridate)
+
+```
+
+### Data Intake
+
+The code chunk below loads the data for you, but you should study each line to understand what it's doing.
+
+```{r}
+### Load the station data set into our RStudio environment as described in the text
+Stations <- mosaic::read.file("http://tiny.cc/dcf/DC-Stations.csv")
+
+### Load the station data set into our RStudio environment as described in the text
+
+# data_site <- "http://tiny.cc/dcf/2014-Q4-Trips-History-Data.rds"          # full data with 600k rows (uncomment to use)
+data_site <- "http://tiny.cc/dcf/2014-Q4-Trips-History-Data-Small.rds"    # small data with 10k rows 
+
+Trips <- readRDS(gzcon(url(data_site)))
+
+
+### Backup code if you need to download the .rds file from the web and load a local version
+
+# Trips <- readRDS("2014-Q4-Trips-History-Data-Small.rds")
+# Trips <- readRDS("2014-Q4-Trips-History-Data.rds")
+
+```
+
+### Always inspect the data tables when you load them
+```{r}
+glimpse(Stations)
+glimpse(Trips)
+```
+
+### Plot check-out times. (reproduce Figure 17.1: Use of shared bicycles over the three months in Q4.)
+```{r}
+Trips %>% ggplot(aes(x = sdate)) + geom_density(fill = "gray", color = NA)
+```
+This diagram shows that bicycles are more typically checked out earlier in the fourth quarter, in the slightly warmer months.
+
+# Section: How Long?
+
+Make box & whisker plot showing the distribution of rental duration by client type.  As instructed in the text, make sure you either configure your scale or use a filter to suppress outliers from dictating the axis range.
+
+```{r}
+Trips %>% mutate(duration = as.numeric(edate - sdate))
+```
+```{r}
+Trips %>% mutate(duration = as.numeric(edate - sdate)) %>% ggplot(aes(x = client, y = duration)) + geom_boxplot() + ylim(0, 4500) + ylab("duration in seconds")
+```
+
+
+# Section: When are bikes used?
+
+Note: You'll use several functions that begin with `lubridate::` this means that those functions have come from the `lubridate` R package, which makes it easy to work with dates in R.  The activity template instructed you to load this package already, but you should use Google or the RStudio help to get a sense of the kind of things this package is designed to do.
+
+
+##### Day of the year (1 to 365)
+```{r}
+Trips %>% mutate(DayofYear = lubridate::yday(sdate)) %>% ggplot(aes(x = DayofYear)) + geom_density(fill = "gray", color = "NA")
+```
+This diagram shows that in the quarter of the year analyzed by the Trips dataset, more bikes are checked out earlier in the year, probably due to warmer weather than at the end of the year.
+
+##### Day of the week (Sunday to Saturday)
+```{r}
+Trips %>% mutate(DayofWeek = lubridate::wday(sdate)) %>% ggplot(aes(x = DayofWeek)) + geom_histogram(fill = "gray", color = "NA")
+```
+This histogram shows that bike rentals are more popular on weekdays than on weekends.
+
+##### Hour of the day (0 to 24)
+```{r}
+Trips %>% mutate(HourofDay = lubridate::hour(sdate)) %>% ggplot(aes(x = HourofDay)) + geom_density(fill = "gray", color = "NA")
+```
+This density plot shows that bicycle sales are higher during "rush hours" as people go to and leave work. Rentals are lowest between 9 PM and 7 AM.
+
+##### Minute in the hour (0 to 60)
+```{r}
+Trips %>% mutate(MinuteofHour = lubridate::minute(sdate)) %>% ggplot(aes(x = MinuteofHour)) + geom_density(fill = "gray", color = "NA")
+```
+
+This diagram shows that there is not a significant time within the hour that sees the most sales, though the half-hour is generally the lowest.
+
+### Group the bike rentals by hour, weekday, & client type
+```{r}
+Trips %>% mutate(HourofDay = lubridate::hour(sdate)) %>% mutate(DayofWeek = lubridate::wday(sdate)) %>% group_by(HourofDay, DayofWeek, client) %>% summarise(count = n()) %>% ggplot(aes(x = HourofDay, y = count)) + geom_line() + aes(color = client) + facet_wrap(~DayofWeek) + labs(subtitle = "DayofWeek from Sunday-Saturday")
+```
+
+### Construct a similar plot using density rather than frequency
+```{r}
+Trips %>% mutate(HourofDay = lubridate::hour(sdate)) %>% mutate(DayofWeek = lubridate::wday(sdate)) %>% ggplot(aes(x = HourofDay)) + geom_density(adjust = 1, alpha = 0.3, color = NA) + aes(fill = client) + facet_wrap(~DayofWeek) + labs(subtitle = "DayofWeek from Sunday-Saturday")
+```
+While the density diagram is helpful in identifying the relative popularity of certain times for bike rentals, the frequency diagram shows popularity without taking popularity within the same day into consideration. For example, the density plot makes it look like noon on Sunday is a very popular time to rent a bike. While noon may be the most popular time on Sunday to rent a bike, Sunday is generally a less popular day to rent bikes, and so even the numbers at noon are only about half as high as Monday's rush hours. For this reason, a frequency distribution allows for easier comparison between different days. A density distribution might be more appropriate if each day was individually being considered.
+
+# Section: How Far?
+
+We want to calculate the distance between stations using the `haversine()` function.  The `source()` function actually runs an R script found at some URL.  Use a web browser to visit this URL and read about the function (it's only a few lines).
+
+```{r}
+source("http://tiny.cc/dcf/haversine.R")  
+```
+```{r}
+Simple <- Stations %>% select(name, lat, long) %>% rename(sstation=name)
+Simple2 <- Simple %>% rename(estation=sstation, lat2=lat, long2=long)
+head(Simple)
+head(Simple2)
+count(Simple)
+count(Simple2)
+```
+
+```{r}
+merge(head(Simple, 4), head(Simple2, 3), by=NULL)
+# There should be 120,409 rows in the resulting merge because that is the product of 347 and 347 from each table.
+StationPairs <- merge(Simple, Simple2, by=NULL)
+StationPairs
+```
+```{r}
+PairDistances <- StationPairs %>% mutate(distance = haversine(lat, long, lat2, long2)) %>% select(sstation, estation, distance)
+PairDistances
+PairDistances %>% ggplot(aes(x = distance)) + geom_histogram()
+```
+It makes sense for Simple and Simple2 to have had different variable names, because each station must be recorded as a start station and end station for all possible combinations of stations.
+```{r}
+RideDistances <- Trips %>% inner_join(PairDistances)
+RideDistances
+```
+```{r}
+RideDistances %>% ggplot(aes(x = distance)) + geom_histogram()
+```
+The distribution between stations and ride distances are not necessarily the same, because people who rent bicycles might not choose to embark on rides that they know will be long. Therefore, rides are more frequently of a shorter nature.
+
+# Section: Mapping the Stations
+```{r}
+devtools::install_github("rstudio/leaflet")
+```
+```{r}
+install.packages("leaflet")
+```
+
+```{r}
+library(leaflet)
+stationMap <- leaflet(Stations) %>%   # like ggplot()
+  addTiles() %>%          # add the map
+  addCircleMarkers(radius=2, color="red") %>%
+  setView(-77.04, 38.9, zoom=12)
+stationMap
+```
+This map shows where all the bicycle stations are, and we can see a greater concentration in central DC and a few in the heart of Arlington. We can also see that areas around the airport and other potentially popular travel destinations.
+
