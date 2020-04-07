@@ -28,7 +28,7 @@ library(gdata)
 + *What contributing factors make the largest changes in each region?*
 + *What contributing factors make the largest change regardless of region?*
 
-## Data Sources
+## Primary Data Source
 
 ```{r}
 data2018 <- read.csv("C:\\Users\\jessl\\Desktop\\2018.csv")
@@ -58,11 +58,6 @@ The "score" variable will be far more important to me than the "overall rank" va
 
 I will merge the 2018 and 2019 datasets when I begin the official project, but for some preliminary exploration, I will just work with the 2018 dataset. In the full project, I will also use the countrycode package to match regions. This exploration is of the raw data that I have not yet manipulated.
 
-```{r}
-install.packages("mdsr")
-library(mdsr)
-```
-
 Let's take a look at some general statistics about the overall happiness index score.
 
 ```{r}
@@ -72,22 +67,34 @@ favstats(~ Score, data = data2018)
 We can see that the mean and median are both over 5 (on a scale of 0-10), which is good! That means that that most countries perceive their own happiness as above average. We also see that there are no missing values in the dataset, which is also helpful. Let's pick some random variables and explore some possible correlations.
 
 ```{r}
-data2018 %>% ggplot(aes(x = Score, y = Healthy.life.expectancy)) + geom_point(aes(color = GDP.per.capita))
+data2018 %>% ggplot(aes(x = Score, y = Healthy.life.expectancy)) + geom_point(aes(color = GDP.per.capita)) + geom_smooth()
 ```
 
 ```{r}
-data2018 %>% ggplot(aes(x = Score, y = Generosity)) + geom_point(aes(color = Social.support))
+data2018 %>% ggplot(aes(x = Score, y = Generosity)) + geom_point(aes(color = Social.support)) + geom_smooth()
 ```
 
 These graph is very telling! We will need to do further exploration, but I can make some inferences based on the graph. The strongly positive correlation between score and life expectancy suggests that life expectancy may be a consistently strong contributing factor in overall score. However, there is no clearly visible correlation between generosity and score; perhaps it is not as much of a factor. Similarly, we see a strong positive correlation with life expectancy and GDP per capita- these variables often vary together. Social support and generosity have no such relationship, but social support does correlate positively with score. We cannot yet make conclusive causative statements about the data, but we have seen some simple correlations that I may wish to explore further.
 
 But how does this data help my research action? While I will not manipulate the original datasets in this preliminary document (as I am taking time to explore the data and form my own hypotheses before outright answering the question), I can begin to consider possible conclusions to my guiding question. I see that social support correlates positively with score: what countries and regions of the world do I know have strong social support networks? What regions do I know tend to have lower life expectancies- how can I apply my knowledge of global disease and war crises? I am not answering my question today: I am observing trends, applying background information, and making hypotheses that I will explore in my full project.
 
+While I won't assign regional values yet, let's take a quick look at North American countries.
+
+```{r}
+NorthAmerica <- data2018 %>% filter(Country.or.region == "Mexico" | Country.or.region == "Canada" | Country.or.region == "United States")
+NorthAmerica %>% ggplot(aes(x = Country.or.region, y = Score)) + geom_bar(stat = "identity", fill = "blue") + xlab("Country Name") + ylab("Happiness Score")
+```
+In North America, it looks like the countries had fairly similar happiness scores. But will that be the same for every region we explore? Could this only be occurring due to the small number of countries in the region, when compared to continents like Europe? 
+
+```{r}
+mean(NorthAmerica$Score)
 ```
 
+Now we see that the mean happiness index of North American countries is a whole point higher than the global mean: so, are the similar happiness scores in that region only occurring because of the remarkably high happiness index? What factors are occurring in North America that make its mean so high? This is exactly the type of question that we will answer in the full project with our manipulated data.
 
-## Defining Data Sources
+## Secondary Data Sources
 
+We discussed the primary data source for this project as the World Happiness Report. However, I will also be using several R packages to group and plot my data. I intend to use the countrycode package to map each case to its respective continent or global region. Then, I will try to use ggplot2 and its World Map feature to map the happiness trends around the world through a gradient color scheme. Both of these packages have been installed into my RStudio, and below, you can find some links to the documentation that I viewed when determining what packages would be effective for completing the dataset with regional information and graphing it.
 
 ## Links to Data Sources
 
