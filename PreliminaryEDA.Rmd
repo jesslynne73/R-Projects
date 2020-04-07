@@ -30,15 +30,61 @@ library(gdata)
 
 ## Data Sources
 
-The primary data sources used in this report are the 2018 and 2019 World Happiness Index reports. The reports are compiled and released by the Sustainable Development Solutions Network, and have been shared in prominent venues including the United Nations International Day of Happiness event. Gallup World Poll collects the data through global polling via the Cantril ladder; respondents rank the quality of their own lives on a scale of 1-10, from worst possible life to best possible life. Calculations then occur multiplying national data about contributing factors (such as life expectancy) to predict the effect of those factors on the country's average score. A "residual" value exists as the difference between the sum of the contributing factors and the actual average happiness score, which may include non-quantitative cultural aspects of citizenship in a country. The average sample size is about 1,000 people per country per year with a 95% confidence interval.
+```{r}
+data2018 <- read.csv("C:\\Users\\jessl\\Desktop\\2018.csv")
+data2019 <- read.csv("C:\\Users\\jessl\\Desktop\\2019.csv")
+```
+
+The primary data sources used in this report are the 2018 and 2019 World Happiness Index reports. The reports are compiled and released by the Sustainable Development Solutions Network, and have been shared in prominent venues including the United Nations International Day of Happiness event. Gallup World Poll collects the data through global polling via the Cantril ladder; respondents rank the quality of their own lives on a scale of 0-10, from worst possible life to best possible life. Calculations then occur multiplying national data about contributing factors (such as life expectancy) to predict the effect of those factors on the country's average score. A "residual" value exists as the difference between the sum of the contributing factors and the actual average happiness score, which may include non-quantitative cultural aspects of citizenship in a country. The average sample size is about 1,000 people per country per year with a 95% confidence interval.
 
 The data is not gathered to make predictions about happiness, but to analyze the happiness of each country and consider what social and cultural programs each year may have contributed the most to the happiness of the citizens. The project began in 2015, and a new report is published each year.
 
+```{r}
+head(data2018, 5)
+tail(data2018, 5)
+count(data2018)
+```
+
 A case represents the happiness index and contributing factors for one individual country. I plan to merge the 2018 and 2019 data sets so that a case will then represent the happiness index of a country in either year. There are 156 cases for each year, so I will work with 312 cases in my merged data set.
+
+```{r}
+names(data2018)
+str(data2018)
+```
 
 The "score" variable will be far more important to me than the "overall rank" variable. Because I am interested in the change in happiness, I will want to find the difference in "score" across years, rather than "overall rank." This is because of the possibility that multiple countries all saw a change in score without rank changing significantly. I also plan to use the "country" variable in combination with the countrycode R package to match cases to continents and compute regional happinss scores. Finally, I intend to use each contributing factor variable to determine what factors are the most significant per region and what factors remain significant regardless of geographic location.
 
 ## Exploring the Data
+
+I will merge the 2018 and 2019 datasets when I begin the official project, but for some preliminary exploration, I will just work with the 2018 dataset. In the full project, I will also use the countrycode package to match regions. This exploration is of the raw data that I have not yet manipulated.
+
+```{r}
+install.packages("mdsr")
+library(mdsr)
+```
+
+Let's take a look at some general statistics about the overall happiness index score.
+
+```{r}
+favstats(~ Score, data = data2018)
+```
+
+We can see that the mean and median are both over 5 (on a scale of 0-10), which is good! That means that that most countries perceive their own happiness as above average. We also see that there are no missing values in the dataset, which is also helpful. Let's pick some random variables and explore some possible correlations.
+
+```{r}
+data2018 %>% ggplot(aes(x = Score, y = Healthy.life.expectancy)) + geom_point(aes(color = GDP.per.capita))
+```
+
+```{r}
+data2018 %>% ggplot(aes(x = Score, y = Generosity)) + geom_point(aes(color = Social.support))
+```
+
+These graph is very telling! We will need to do further exploration, but I can make some inferences based on the graph. The strongly positive correlation between score and life expectancy suggests that life expectancy may be a consistently strong contributing factor in overall score. However, there is no clearly visible correlation between generosity and score; perhaps it is not as much of a factor. Similarly, we see a strong positive correlation with life expectancy and GDP per capita- these variables often vary together. Social support and generosity have no such relationship, but social support does correlate positively with score. We cannot yet make conclusive causative statements about the data, but we have seen some simple correlations that I may wish to explore further.
+
+But how does this data help my research action? While I will not manipulate the original datasets in this preliminary document (as I am taking time to explore the data and form my own hypotheses before outright answering the question), I can begin to consider possible conclusions to my guiding question. I see that social support correlates positively with score: what countries and regions of the world do I know have strong social support networks? What regions do I know tend to have lower life expectancies- how can I apply my knowledge of global disease and war crises? I am not answering my question today: I am observing trends, applying background information, and making hypotheses that I will explore in my full project.
+
+```
+
 
 ## Defining Data Sources
 
