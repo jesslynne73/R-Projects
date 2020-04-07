@@ -1,0 +1,91 @@
+---
+title: "Scraping Nuclear Reactors"
+author: "Jessica Strait"
+date: "3-31-20"
+output: html_notebook
+---
+
+## Front Matter
+
+```{r}
+rm(list = ls())
+library(mosaic)
+library(DataComputing)
+library(tidyverse)
+library(rvest)
+library(lubridate)
+```
+
+```{r}
+# Use code given by textbook to scrape all data from Wikipedia page
+page <- "http://en.wikipedia.org/wiki/List_of_nuclear_reactors"
+tableList <- page %>% read_html() %>% html_nodes(css = "table") %>% html_table(fill = TRUE)
+```
+
+```{r}
+# Identify element of list of tables that is Japan
+JapanReactors <- tableList[[22]]
+JapanReactors
+```
+
+### Problem 1: Tidy Data
+
+The resulting table is tidy in that each column corresponds to a distinct variable; however, there are two variables named "Reactor" in the data frame, when one of these columns was named "Type" on the original webpage. This should be remedied to ensure that there is no confusion about what each of these variables represents. There is also confusion between the two "Capacity in MW" variables which are intended to represent gross and net values; this should be reflected in the variable names of the resulting data frame. While it is clear that a case is intended to represent one unit of a nuclear reactor, each row does not represent exactly one case. This is due to the very first row being a reiteration of the variable names from the webpage, which are not entirely consistent with the translation of the table into the R Notebook. Additionally, there should be more consistency in levels of variables, particularly in the "Status" variable. Because some cases have more than one factor listed or have extra information such as citations in this column, aggregating this data would be far more difficult than if there were a limited number of levels. In summary, the lack of distinction between column names (i.e. variables) and the failure to establish one row as one case prevent this table from being tidy.
+
+```{r}
+# Creating tidy variables from the code given in the textbook
+names(JapanReactors)[c(3,7)] <- c("type", "grossMW")
+Japan <- JapanReactors %>% filter(row_number() > 1) %>% rename(name = Name, reactor = `UnitNo.`, model = Reactor, status = Status, netMW = `Capacity in MW`, construction = `Construction start`, operation = `Commercial operation`, closure = Closure)
+Japan
+```
+
+```{r}
+# Check variable types
+Japan %>% str()
+# Mutate variable types where necessary
+Japan <- Japan %>% mutate(netMW = as.numeric(netMW), grossMW = as.integer(grossMW), reactor = as.integer(reactor)) %>% mutate(construction = dmy(construction), operation = dmy(operation), closure = dmy(closure))
+Japan
+```
+
+### Problem 2: Plotting Japan
+
+```{r}
+Japan %>% ggplot(aes(x = netMW, y = construction)) + geom_point() + aes(color = type) + scale_x_continuous(breaks = seq(100, 2000, by = 100)) + xlab("Net Capacity") + ylab("Construction Date")
+```
+From this graphic, I can see that generally, the net capacity of nuclear reactors has increased over time, so newer reactors tend to have a greater capacity. I can also see that BWR reactors are the most common, especially recently, and tend to perform better than other types of reactors; nowadays, it seems its only competitor is the PWR reactor, and other reactor types are not typically being constructed.
+
+### Problem 3: Data Scraping for China
+
+```{r}
+ChinaReactors <- tableList[[10]]
+ChinaReactors
+```
+```{r}
+names(ChinaReactors)[c(3,7)] <- c("type", "grossMW")
+China <- ChinaReactors %>% filter(row_number() > 1) %>% rename(name = Name, reactor = `UnitNo.`, model = Reactor, status = Status, netMW = `Capacity in MW`, construction = `Construction start`, operation = `Commercial operation`, closure = Closure)
+China
+```
+```{r}
+# Check variable types
+China %>% str()
+# Mutate variable types where necessary
+China <- China %>% mutate(netMW = as.numeric(netMW), grossMW = as.integer(grossMW), reactor = as.integer(reactor)) %>% mutate(construction = dmy(construction), operation = dmy(operation), closure = dmy(closure))
+China
+```
+```{r}
+Japan <- Japan %>% mutate(country = "Japan")
+China <- China %>% mutate(country = "China")
+NuclearReactors <- rbind(Japan, China)
+NuclearReactors
+```
+
+
+### Problem 4: Plotting Japan Time to Operation
+
+```{r}
+Japan <- Japan %>% mutate(reactorID = paste(name, reactor))
+JapanGraph <- Japan %>% ggplot() + geom_segment(aes(x = construction, y = reactorID, xend = operation, yend = reactorID)) + theme(axis.text.y = element_text(angle = 10, size = 6), legend.position = "right") + aes(color = type) + xlab("operation") + geom_point(aes(x = closure, y = reactorID, shape = status))
+JapanGraph
+```
+
+
