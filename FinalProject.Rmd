@@ -1,0 +1,65 @@
+---
+title: "Final Project: World Happiness Index"
+author: "Jessica Strait"
+date: "4-24-2020"
+output: html_notebook
+---
+
+## Front Matter
+
+```{r} 
+rm(list = ls())
+
+# load packages
+library(DataComputing)
+library(mosaic)
+library(tidyverse)
+library(dplyr)
+```
+
+## Guiding Questions
+
+* **Which regions of the world are the happiest and why?**
+  + *Which countries have seen a large change in happiness from 2018 to 2019?*
+  + *What contributing factors make the largest changes in each region, and how does the residual factor in?*
+
+## Data Access
+
+```{r}
+# Import the data sets for years 2018 and 2019
+data2018 <- read.csv("C:\\Users\\jessl\\Desktop\\2018.csv")
+data2019 <- read.csv("C:\\Users\\jessl\\Desktop\\2019.csv")
+```
+
+```{r}
+# Import supporting data from R packages
+install.packages("countrycode")
+library(countrycode)
+install.packages("gdata")
+library(gdata)
+```
+
+```{r}
+# Inspect my primary data sources
+head(data2018, 5)
+tail(data2018, 5)
+count(data2018)
+names(data2018)
+str(data2018)
+```
+
+
+## Data Wrangling
+
+## Data Visualization
+
+
+
+
+
+
+
+
+
+
+
