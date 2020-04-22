@@ -28,28 +28,28 @@ output:  html_notebook
 *Description: Students need not use every function and method introduced in STAT 184, but clear demonstration of proficiency should include proper use of 5 out of the following 8 topics from class: (+) various data verbs for general data wrangling like filter, mutate, summarise, arrange, group_by, etc. (+) joins for multiple data tables. (+) spread & gather to stack/unstack variables (+) regular expressions (+) reduction and/or transformation functions like mean, sum, max, min, n(), rank, pmin, etc. (+) user-defined functions (+) loops and control flow (+) machine learning*
 
 
-(A) .Rmd Line number(s) for general data wrangling: Lines 66-70, 90-96
+(A) .Rmd Line number(s) for general data wrangling: Lines 64-68, 85-91, 93-98
 
 
-(B) .Rmd Line number(s) for a join operation: Lines 54-58
+(B) .Rmd Line number(s) for a join operation: Lines 52-56
 
 
-(C) .Rmd Line number(s) for a spread or gather operation (or equivalent): N/A
+(C) .Rmd Line number(s) for a spread or gather operation (or equivalent): Lines 104, 109
 
 
-(D) .Rmd Line number(s) for use of regular expressions: 
+(D) .Rmd Line number(s) for use of regular expressions: Lines 106-107
 
 
-(E) .Rmd Line number(s) for use of reduction and/or transformation functions: Lines 60-64
+(E) .Rmd Line number(s) for use of reduction and/or transformation functions: Lines 58-62, 86-88, 95
 
 
-(F) .Rmd Line number(s) for use of user-defined functions: 
+(F) .Rmd Line number(s) for use of user-defined functions: N/A
 
 
-(G) .Rmd Line number(s) for use of loops and/or control flow: 
+(G) .Rmd Line number(s) for use of loops and/or control flow: N/A
 
 
-(H) .Rmd Line number(s) for use of machine learning (not "wrangling" but scored here): Lines 79-87
+(H) .Rmd Line number(s) for use of machine learning (not "wrangling" but scored here): Lines 75-83
 
 
 
@@ -66,7 +66,7 @@ output:  html_notebook
 
 (D) .Rmd Line number(s) for use of leaflet maps:  
 
-(E) .Rmd Line number(s) for use of decision tree or dendogram results:    
+(E) .Rmd Line number(s) for use of decision tree or dendogram results: Lines 108-112
 
 
 

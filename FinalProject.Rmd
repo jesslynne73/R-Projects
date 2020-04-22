@@ -14,8 +14,6 @@ rm(list = ls())
 library(DataComputing)
 library(mosaic)
 library(tidyverse)
-library(dplyr)
-install.packages("party")
 library(party)
 ```
 
@@ -35,9 +33,7 @@ data2019 <- read.csv("C:\\Users\\jessl\\Desktop\\2019.csv")
 
 ```{r}
 # Import supporting data from R packages
-install.packages("countrycode")
 library(countrycode)
-install.packages("gdata")
 library(gdata)
 ```
 
@@ -55,56 +51,76 @@ str(data2018)
 
 ```{r}
 # Use a join to merge data from 2018 and 2019. Note that variables with .x are from 2018, and .y are from 2019.
-happiness <- merge(data2018, data2019, by = "Country.or.region")
-head(happiness, 10)
+Happiness <- data2018 %>% left_join(data2019, by = c("Country.or.region" = "Country.or.region"))
+head(Happiness, 10)
 ```
 
 ```{r}
 # Convert country variable to a string so we can use the countrycode package. Double-check that it worked.
-happiness$Country.or.region <- as.character(happiness$Country.or.region)
-class(happiness$Country.or.region)
+Happiness$Country.or.region <- as.character(Happiness$Country.or.region)
+class(Happiness$Country.or.region)
 ```
 
 ```{r}
 # Time to start assigning continents to countries! I'll create a new variable using the countrycode package to assign the continents.
-happiness <- happiness %>% mutate(Continent = countrycode(sourcevar = happiness$Country.or.region, origin = "country.name", destination = "continent"))
-happiness
+Happiness <- Happiness %>% mutate(Continent = countrycode(sourcevar = Happiness$Country.or.region, origin = "country.name", destination = "continent"))
+Happiness
 ```
 
 ```{r}
 # Let's look at some quick stats about our data table for 2018. We will want this information to do some predictions with machine learning.
-favstats(~ Score.x, data = happiness)
+favstats(~ Score.x, data = Happiness)
 ```
 
 ```{r}
 # Looking at the 2018 data, let's see how much of a contributing factor the Continent is. We know there are 152 cases by our favstats() function.
 # First, turn our Continent variable into a factor so that we can run the ctree() function on it.
-happiness$Continent <- as.factor(happiness$Continent)
-# Use machine learning techniques from the party R package. We are conditioning on Continent and measuring the probability of a country being in the top 50% of happiest countries.
-happy_continents2018 <- ctree(Overall.rank.x < (152/2) ~ Continent, data = happiness)
-# Plot the decision tree
-plot(happy_continents2018, type = "simple")
+Happiness$Continent <- as.factor(Happiness$Continent)
+# Use machine learning techniques from the party R package. We are conditioning on Continent and measuring the probability of a country being in the top 50% of happiest countries. This will help us answer our primary research question, regarding what regions of the world are the happiest.
+happy_continents2018 <- ctree(Overall.rank.x < (152/2) ~ Continent, data = Happiness)
+# We will plot the decision tree in the data visualization section. Let's take a look at the binary tree we've created for now.
+happy_continents2018
 ```
-To read this decision tree, note that n = the number of countries in a node (i.e. a continent) and y = the probability of a country in that node to be in the happiest 50% of countries. Countries in the Americas, Europe, and Oceania have an 81% chance of being in the top 50%, countries in Asia have a 44.5% chance, and countries in Africa have less than a 5% chance. We can tell from this decision tree that simply knowing the continent of a country allows us to make a reasonable prediction on how happy that country is relative to the rest of the world.
 
 ```{r}
-# Now, we need to compute the residual (i.e. the difference between the overall happiness score and the sum of the defined contributing factors) for each country for each year. We will use mutate and several transformation verbs to do this. Recall that .x implies 2018 and .y implies 2019 data.
-happiness <- happiness %>% mutate(Residual.x = Score.x - (as.numeric(GDP.per.capita.x) + as.numeric(Social.support.x) + as.numeric(Healthy.life.expectancy.x) + as.numeric(Freedom.to.make.life.choices.x) + as.numeric(Generosity.x) + as.numeric(levels(Perceptions.of.corruption.x))[Perceptions.of.corruption.x]))
-happiness <- happiness %>% mutate(Residual.y = Score.y - (as.numeric(GDP.per.capita.y) + as.numeric(Social.support.y) + as.numeric(Healthy.life.expectancy.y) + as.numeric(Freedom.to.make.life.choices.y) + as.numeric(Generosity.y) + as.numeric(Perceptions.of.corruption.y)))
+# Now, for a secondary research question, we need to compute the residual (the difference between the overall happiness score and the sum of the defined contributing factors) for each country for each year. We will use mutate and several transformation verbs to do this. Recall that .x implies 2018 and .y implies 2019 data.
+Happiness <- Happiness %>% mutate(Residual.x = Score.x - (as.numeric(GDP.per.capita.x) + as.numeric(Social.support.x) + as.numeric(Healthy.life.expectancy.x) + as.numeric(Freedom.to.make.life.choices.x) + as.numeric(Generosity.x) + as.numeric(levels(Perceptions.of.corruption.x))[Perceptions.of.corruption.x]))
+Happiness <- Happiness %>% mutate(Residual.y = Score.y - (as.numeric(GDP.per.capita.y) + as.numeric(Social.support.y) + as.numeric(Healthy.life.expectancy.y) + as.numeric(Freedom.to.make.life.choices.y) + as.numeric(Generosity.y) + as.numeric(Perceptions.of.corruption.y)))
 # Select some variables and check that it worked
-happiness %>% select(Country.or.region, Continent, Score.x, Score.y, Residual.x, Residual.y)
+Happiness %>% select(Country.or.region, Continent, Score.x, Score.y, Residual.x, Residual.y)
 ```
 
 ```{r}
-# Let's start with 2018 and see what countries had the highest residual values.
-happiness %>% arrange(desc(Residual.x)) %>% select(Country.or.region, Residual.x, Continent, Score.x)
+# Let's use the 2018 data and see what countries had the highest residual values.
+ResidualTable <- Happiness %>% arrange(desc(Residual.x)) %>% select(Country.or.region, Residual.x, Continent, Score.x) %>% group_by(Continent) %>%
+  summarise(ContinentResidual = mean(Residual.x, na.rm = TRUE), ContinentAverage = mean(Score.x)) %>% na.omit()
+# This gives us information on the actual average happiness per continent in addition to the average residual value for that continent in 2018. However, because continents with a lower overall average score will obviously also have a lower average residual, we are more interested in the proportion of residual to average happiness score.
+ResidualTable %>% mutate(ResidualProportion = ContinentResidual/ContinentAverage) %>% arrange(desc(ResidualProportion))
 ```
+From this data table, we learned that almost half of the happiness score in African countries is residual: meaning, it did not fall into one of the pre-defined contributing factors. Could this be an effect of Western countries' information gathering insufficiently understanding what happiness is to non-Western citizens?
 
+```{r}
+# For our final data wrangling task, we will address the secondary research question on which countries have seen a significant change in happiness from 2018 to 2019. To make the resulting data table easier to view, we will use spread/gather and regex methods on our data..
+# Use gather to create one variable with values of either Score.x or Score.y, indicating 2018 or 2019
+MiniHappiness <- Happiness %>% gather(key = when, value = score, Score.x, Score.y)
+# Use gsub to rename "Score.x" and "Score.y" with their corresponding years
+MiniHappiness <- MiniHappiness %>% mutate(when = gsub(pattern = "Score.x", replacement = "Year2018", MiniHappiness$when))
+MiniHappiness <- MiniHappiness %>% mutate(when = gsub(pattern = "Score.y", replacement = "Year2019", MiniHappiness$when))
+# Now that I've renamed my variables, I'll convert the data to a more concise, wide data frame.
+MiniHappiness <- MiniHappiness %>% spread(key = when, value = score) %>% select(Country.or.region, Year2018, Year2019)
+# Now, let's do an operation to find which countries had significant changes.
+MiniHappiness <- MiniHappiness %>% mutate(difference = Year2018-Year2019) 
+MiniHappiness %>% filter(abs(difference) > 0.5)
+```
+I've found four countries with a change of more than half a point. One of these countries became significantly less happy- was there some type of war or civil unrest that could explain this? The three remaining countries all enjoyed an increase in happiness.
 
 ## Data Visualization
 
-
-
+```{r}
+# First, let's plot the decision tree we created earlier.
+plot(happy_continents2018, type = "simple")
+```
+To read this decision tree, note that n = the number of countries in a node (i.e. a continent) and y = the probability of a country in that node to be in the happiest 50% of countries. Countries in the Americas, Europe, and Oceania have an 81% chance of being in the top 50%, countries in Asia have a 44.5% chance, and countries in Africa have less than a 5% chance. We can tell from this decision tree that simply knowing the continent of a country allows us to make a reasonable prediction on how happy that country is relative to the rest of the world. Obviously, Happiness varies as a function of the continent on which a citizen resides.
 
 
 
