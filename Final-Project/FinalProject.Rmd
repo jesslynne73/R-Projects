@@ -3,7 +3,7 @@ title: "Final Project: World Happiness Index"
 author: "Jessica Strait"
 date: "4-24-2020"
 output: html_notebook
----
+--- 
 
 ## Front Matter
 
