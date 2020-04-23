@@ -124,9 +124,16 @@ To read this decision tree, note that n = the number of countries in a node (i.e
 ```{r}
 # Before we start mapping, I want to make a scatterplot of happy countries as a function of continent. We saw some clear grouping in our data wrangling phase, but let's visualize what we learned before tackling something more complicated.
 Happiness <- Happiness %>% mutate(ResidualProportion2018 = Residual.x/Score.x)
-Happiness %>% na.omit() %>% ggplot(aes(x = Score.x, y=Score.y)) + geom_point() + geom_smooth(method = loess, color = 'pink', alpha = 0.2) + aes(colour = ResidualProportion2018, shape = Continent) + facet_wrap(~Continent,ncol=4) + xlab("2018 Happiness Score") + ylab("2019 Happiness Score")
+Happiness %>% na.omit() %>% ggplot(aes(x = Score.x, y=Score.y)) + geom_point() + aes(colour = ResidualProportion2018, shape = Continent) + facet_wrap(~Continent, ncol=4) + xlab("2018 Happiness Score") + ylab("2019 Happiness Score")
 ```
-I chose to separate the data by continent, both with the facet wrap and with shape aesthetics. I also wanted to show the residual values with respect to individual African countries, rather than the whole continent as I showed earlier. This graph confirms my assessment that African countries in general have higher proportions of the overall happiness score from the residual factor. The hypothesis that this may be occurring as a result of Westernized data collection being unable to appreciate non-Western cultural factors would be worth investigating in an expansion of this project. This visualization also shows what we have learned from data wrangling: the Americas, Europe, and Oceania are the happiest continents, and Africa is the unhappiest continent. We learn from the visualization that Europe has the widest range of happiness values, probably as a result of grouping Western and Eastern European countries into one continent despite drastically different economic and social practices between those regions. Separating those regions as well as North and South America may be worthwhile in an expansion of this study. I used the smoother method to show a general "average" range per continent, which also helps countries that experienced significant changes in happiness from 2018 to 2019 be more visually apparent- we notice this especially occuring in Asia and Africa, which is consistent with our data wrangling results.
+I chose to separate the data by continent, both with the facet wrap and with shape aesthetics. I also wanted to show the residual values with respect to individual African countries, rather than the whole continent as I showed earlier. This graph confirms my assessment that African countries in general have higher proportions of the overall happiness score from the residual factor. The hypothesis that this may be occurring as a result of Westernized data collection being unable to appreciate non-Western cultural factors would be worth investigating in an expansion of this project. This visualization also shows what we have learned from data wrangling: the Americas, Europe, and Oceania are the happiest continents, and Africa is the unhappiest continent. We learn from the visualization that Europe has the widest range of happiness values, probably as a result of grouping Western and Eastern European countries into one continent despite drastically different economic and social practices between those regions. Separating those regions as well as North and South America may be worthwhile in an expansion of this study.
+
+```{r}
+# Now that we've seen the individual data points for the countries, let's use a bar graph to easily compare the average happiness scores for each continent.
+ContinentData <- Happiness %>% na.omit() %>% group_by(Continent) %>% summarise(happycontinent2019 = mean(Score.x))
+ggplot(data = ContinentData, aes(x = reorder(Continent, happycontinent2019), y = happycontinent2019, fill = Continent)) + geom_bar(stat = 'identity', position = 'stack', width = .9) + xlab("Continent") + ylab("Average Happiness Score 2018") 
+```
+This bar graph gives us an easy visualization of the average happiness for each overall continent, while the scatterplot gave us a better understanding of each country's happiness within a continent.
 
 ```{r}
 # Finally, let's create a choropleth map of our data. I thought about using a more challenging way to map (namely, the rworldmap package), but then I considered why I was making the map. The goal of the map was to give a visualization of the happiest countries in the world. Why make it more complicated than it needed to be, when I could use a very simple DataComputing tool we learned in the course? First, 2018 data:
@@ -136,6 +143,11 @@ Happiness %>% na.omit() %>% WorldMap(key = Country.or.region, fill = Score.x)
 # And lastly, 2019 data:
 Happiness %>% na.omit() %>% WorldMap(key = Country.or.region, fill = Score.y)
 ```
-Looking at these maps allows us to visualize my overarching research question. We have done the wrangling, and here is what we've learned: now, let's show which continents are happiest so the next researcher doesn't have to 
+Looking at these maps allows us to graphically present the answer to my overarching research question. We have done the wrangling, and here is what we've learned: now, let's show which continents are happiest with a number of visualizations so the next researcher doesn't have to complete the same wrangling tasks. The Americas, Europe, and Oceania are the happiest continents, and Africa is the unhappiest continent.
 
+## Links to Data Sources
 
+https://worldhappiness.report/ for the history of the project and appendices describing statistical measures taken.
+https://www.kaggle.com/unsdsn/world-happiness for a general summary of each factor and downloadable data for each year.
+https://cran.r-project.org/web/packages/countrycode/countrycode.pdf for documentation on the countrycode R package and how it can be used.
+https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html for documentation on how to use ggplot2 and the world map function.
