@@ -58,13 +58,13 @@ output:  html_notebook
 *Description: Students need not use every function and method introduced in STAT 184, but clear demonstration of proficiency should include a range of useful of data visualizations that are (1) relevant to stated research question for the analysis, (2) include at least one effective display of many--at least 3--variables, and (3) include 3 of the following 5 visualization techniques learned in STAT 184: (+) use of multiple geoms such as points, density, lines, segments, boxplots, bar charts, histograms, etc (+) use of multiple aesthetics--not necessarily all in the same graph--such as color, size, shape, x/y position, facets, etc (+) layered graphics such as points and accompanying smoother, points and accompanying boxplots, overlaid density distributions, etc (+) leaflet maps (+) decision tree and/or dendogram displaying machine learning model results*
 
 
-(A) .Rmd Line number(s) for use of mulitple different geoms:  
+(A) .Rmd Line number(s) for use of mulitple different geoms: Line 128
 
-(B) .Rmd Line number(s) for use of multiple aesthetics:  
+(B) .Rmd Line number(s) for use of multiple aesthetics: Line 128
 
-(C) .Rmd Line number(s) for use of layered graphics:  
+(C) .Rmd Line number(s) for use of layered graphics: N/A
 
-(D) .Rmd Line number(s) for use of leaflet maps:  
+(D) .Rmd Line number(s) for use of leaflet maps: N/A
 
 (E) .Rmd Line number(s) for use of decision tree or dendogram results: Lines 108-112
 
