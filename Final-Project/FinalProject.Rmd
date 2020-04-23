@@ -32,6 +32,7 @@ data2019 <- read.csv("C:\\Users\\jessl\\Desktop\\2019.csv")
 
 ```{r}
 # Import supporting data from R packages: we need continent information and also the WorldMap() visualization provided by DataComputing.
+install.packages("countrycode")
 library(countrycode)
 library(DataComputing)
 ```
