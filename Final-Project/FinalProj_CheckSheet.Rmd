@@ -17,10 +17,10 @@ output:  html_notebook
 
 *Description: (1) Analysis includes at least two different data sources. (2) Primary data source may NOT be loaded from an R package--though supporting data may. (3) Access to all data sources is contained within the analysis. (4) Imported data is inspected at beginning of analysis using one or more R functions: e.g., str, glimpse, head, tail, names, nrow, etc*
 
-(A) .Rmd Line numbers where at least two different data sources are imported: Lines 28-40
+(A) .Rmd Line numbers where at least two different data sources are imported: Lines 27-37
 
 
-(B) .Rmd Line numbers for inspecting data intake: Lines 42-49
+(B) .Rmd Line numbers for inspecting data intake: Lines 39-46
 
 
 ### Data Wrangling (5 out of 8 required)
@@ -28,10 +28,10 @@ output:  html_notebook
 *Description: Students need not use every function and method introduced in STAT 184, but clear demonstration of proficiency should include proper use of 5 out of the following 8 topics from class: (+) various data verbs for general data wrangling like filter, mutate, summarise, arrange, group_by, etc. (+) joins for multiple data tables. (+) spread & gather to stack/unstack variables (+) regular expressions (+) reduction and/or transformation functions like mean, sum, max, min, n(), rank, pmin, etc. (+) user-defined functions (+) loops and control flow (+) machine learning*
 
 
-(A) .Rmd Line number(s) for general data wrangling: Lines 64-68, 85-91, 93-98
+(A) .Rmd Line number(s) for general data wrangling: Lines 63-67, 86-89, 92-98, 111-112
 
 
-(B) .Rmd Line number(s) for a join operation: Lines 52-56
+(B) .Rmd Line number(s) for a join operation: Lines 51-55
 
 
 (C) .Rmd Line number(s) for a spread or gather operation (or equivalent): Lines 104, 109
@@ -40,7 +40,7 @@ output:  html_notebook
 (D) .Rmd Line number(s) for use of regular expressions: Lines 106-107
 
 
-(E) .Rmd Line number(s) for use of reduction and/or transformation functions: Lines 58-62, 86-88, 95
+(E) .Rmd Line number(s) for use of reduction and/or transformation functions: Lines 57-61, 77, 86-87, 95
 
 
 (F) .Rmd Line number(s) for use of user-defined functions: N/A
@@ -49,7 +49,7 @@ output:  html_notebook
 (G) .Rmd Line number(s) for use of loops and/or control flow: N/A
 
 
-(H) .Rmd Line number(s) for use of machine learning (not "wrangling" but scored here): Lines 75-83
+(H) .Rmd Line number(s) for use of machine learning (not "wrangling" but scored here): Line 79
 
 
 
@@ -58,15 +58,15 @@ output:  html_notebook
 *Description: Students need not use every function and method introduced in STAT 184, but clear demonstration of proficiency should include a range of useful of data visualizations that are (1) relevant to stated research question for the analysis, (2) include at least one effective display of many--at least 3--variables, and (3) include 3 of the following 5 visualization techniques learned in STAT 184: (+) use of multiple geoms such as points, density, lines, segments, boxplots, bar charts, histograms, etc (+) use of multiple aesthetics--not necessarily all in the same graph--such as color, size, shape, x/y position, facets, etc (+) layered graphics such as points and accompanying smoother, points and accompanying boxplots, overlaid density distributions, etc (+) leaflet maps (+) decision tree and/or dendogram displaying machine learning model results*
 
 
-(A) .Rmd Line number(s) for use of mulitple different geoms: Line 128
+(A) .Rmd Line number(s) for use of multiple different geoms: Line 127 
 
-(B) .Rmd Line number(s) for use of multiple aesthetics: Line 128
+(B) .Rmd Line number(s) for use of multiple aesthetics: Line 127
 
 (C) .Rmd Line number(s) for use of layered graphics: N/A
 
-(D) .Rmd Line number(s) for use of leaflet maps: N/A
+(D) .Rmd Line number(s) for use of leaflet maps: No leaflet maps but WorldMap() visualizations on Lines 133 and 137
 
-(E) .Rmd Line number(s) for use of decision tree or dendogram results: Lines 108-112
+(E) .Rmd Line number(s) for use of decision tree or dendogram results: Lines 118-121
 
 
 
