@@ -1,3 +1,3 @@
-## Welcome to Jessica's page for STAT 184 at Penn State
+## Welcome to Jessica's page for R Projects and Data Analysis
 
-I'll use this repository to share assignments and activities in support of STAT 184: Introduction to R at Penn State. My final and most interesting project for this course involved wrangling, machine learning techniques, and visualization of the World Happiness Index in R.
+I'll use this repository to share assignments and activities in support of R programming. You can view my extensive final project for STAT 184: Intro to R in my "World-Happiness-Data-Analysis" repository.
