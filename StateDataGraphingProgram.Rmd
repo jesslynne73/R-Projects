@@ -3,7 +3,8 @@ title: "Public Assistance by State Data Analysis"
 author: "Jess Strait for Crisis Track"
 output: html_notebook
 ---
-# The use case for this program is to read public assistance data from FEMA as a CSV, filter the data by desired variables (i.e. state and date of declaration), and generate PNG files of graphs created by ggplot2 conventions.
+# The use case for this program is to read public assistance data from FEMA as a CSV, filter the data by desired variables (i.e. state and date of declaration), 
+# and generate PNG files of graphs created by ggplot2 conventions.
 
 # Front Matter
 
