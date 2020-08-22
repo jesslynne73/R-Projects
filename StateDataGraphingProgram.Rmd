@@ -1,0 +1,45 @@
+---
+title: "Public Assistance by State Data Analysis"
+author: "Jess Strait"
+output: html_notebook
+---
+
+# Front Matter
+
+```{r}
+rm(list = ls())
+
+# load packages
+library(DataComputing)
+library(mosaic)
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+# read data
+StateData <- read.csv(file = "PublicAssistanceData.csv")
+StateData
+```
+
+# Sample FL Graphics
+```{r}
+# Data wrangling
+FLData <- StateData %>% select(stateCode, declarationDate, damageCategoryCode, projectAmount) %>% filter(stateCode == 'FL') 
+FLData$declarationDate <- substr(FLData$declarationDate, 0, 10)
+FLData10 <- FLData %>% filter(declarationDate > 2010)
+FLData15 <- FLData %>% filter(declarationDate > 2005)
+FLData20 <- FLData %>% filter(declarationDate > 2000)
+```
+
+```{r}
+# Generate pie charts
+FLData10Graph <- ggplot(data = FLData10, aes(x = '', y = projectAmount, fill = damageCategoryCode)) + geom_bar(stat = 'identity', width = 1) + coord_polar("y", start=0) + theme_void() + ggtitle("FEMA Public Assistance Florida 2010-2020") + labs(fill = 'Damage Category Code')
+ggsave("FLData10.png", FLData10Graph)
+FLData15Graph <- ggplot(data = FLData15, aes(x = '', y = projectAmount, fill = damageCategoryCode)) + geom_bar(stat = 'identity', width = 1) + coord_polar("y", start=0) + theme_void() + ggtitle("FEMA Public Assistance Florida 2005-2020") + labs(fill = 'Damage Category Code')
+ggsave("FLData15.png", FLData15Graph)
+FLData20Graph <- ggplot(data = FLData20, aes(x = '', y = projectAmount, fill = damageCategoryCode)) + geom_bar(stat = 'identity', width = 1) + coord_polar("y", start=0) + theme_void() + ggtitle("FEMA Public Assistance Florida 2000-2020") + labs(fill = 'Damage Category Code')
+ggsave("FLData20.png", FLData20Graph)
+
+```
+
