@@ -16,32 +16,32 @@ library(DataComputing)
 library(mosaic)
 library(tidyverse)
 library(ggplot2)
+library(scales)
 ```
 
+# Data Wrangling
+
 ```{r}
-# read data
+# Intake and wrangle data
 StateData <- read.csv(file = "PublicAssistanceData.csv")
+StateData <- StateData %>% select(stateCode, declarationDate, damageCategoryCode, projectAmount)
+StateData$declarationDate <- substr(StateData$declarationDate, 0, 10)
+StateData <- StateData %>% filter(declarationDate > 2010) %>% group_by(stateCode, damageCategoryCode) %>% mutate(projectSum = sum(projectAmount)) 
+StateData <- StateData %>% group_by(stateCode) %>% mutate(stateTotal = sum(projectAmount))
+StateData <- StateData %>% mutate(projectPercent = projectSum/stateTotal)
+StateData <- StateData %>% select(stateCode, damageCategoryCode, projectSum, projectPercent)
+StateData$projectPercent <- label_percent()(StateData$projectPercent)
+StateData <- StateData %>% mutate(categoryPercent = paste(as.character(damageCategoryCode), as.character(projectPercent)))
 StateData
 ```
 
 # Sample FL Graphics
-```{r}
-# Data wrangling
-FLData <- StateData %>% select(stateCode, declarationDate, damageCategoryCode, projectAmount) %>% filter(stateCode == 'FL') 
-FLData$declarationDate <- substr(FLData$declarationDate, 0, 10)
-FLData10 <- FLData %>% filter(declarationDate > 2010)
-FLData15 <- FLData %>% filter(declarationDate > 2005)
-FLData20 <- FLData %>% filter(declarationDate > 2000)
-```
 
 ```{r}
-# Generate pie charts
-FLData10Graph <- ggplot(data = FLData10, aes(x = '', y = projectAmount, fill = damageCategoryCode)) + geom_bar(stat = 'identity', width = 1) + coord_polar("y", start=0) + theme_void() + ggtitle("FEMA Public Assistance Florida 2010-2020") + labs(fill = 'Damage Category Code')
-ggsave("FLData10.png", FLData10Graph)
-FLData15Graph <- ggplot(data = FLData15, aes(x = '', y = projectAmount, fill = damageCategoryCode)) + geom_bar(stat = 'identity', width = 1) + coord_polar("y", start=0) + theme_void() + ggtitle("FEMA Public Assistance Florida 2005-2020") + labs(fill = 'Damage Category Code')
-ggsave("FLData15.png", FLData15Graph)
-FLData20Graph <- ggplot(data = FLData20, aes(x = '', y = projectAmount, fill = damageCategoryCode)) + geom_bar(stat = 'identity', width = 1) + coord_polar("y", start=0) + theme_void() + ggtitle("FEMA Public Assistance Florida 2000-2020") + labs(fill = 'Damage Category Code')
-ggsave("FLData20.png", FLData20Graph)
-
+# Generate pie chart
+FLData <- StateData %>% filter(stateCode == 'FL')
+FLData
+FLDataGraph <- ggplot(data = FLData, aes(x = '', y = projectPercent, fill = categoryPercent)) + geom_bar(stat = 'identity', width = 1) + coord_polar("y", start=0) + theme_void() + ggtitle("FEMA Public Assistance Florida 2010-2020") + labs(fill = 'Damage Category Code') + scale_fill_brewer(palette = "Set1")
+FLDataGraph
+ggsave("FLData.png", FLDataGraph)
 ```
-
