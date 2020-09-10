@@ -1,4 +1,5 @@
 # Author: Jess Strait
+# The use case for this program is to intake data about houses and to predict the price of other houses based on the training data.
 
 # Front Matter
 rm(list = ls())
