@@ -4,7 +4,8 @@ author: "Jess Strait for Crisis Track"
 output: html_notebook
 ---
 
-# The use case for this program is to intake FEMA public assistance, compute the total public assistance received per state, and present the states in ranked order by total public assistance received.
+# The use case for this program is to intake FEMA public assistance, compute the total public assistance received per state, 
+# and present the states in ranked order by total public assistance received.
 
 # Front Matter
 
