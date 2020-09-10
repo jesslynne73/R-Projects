@@ -1,0 +1,57 @@
+---
+title: "Major Disaster Declarations"
+author: "Jess Strait"
+output: html_notebook
+---
+
+# Front Matter
+
+```{r}
+rm(list = ls())
+
+# Load packages
+library(DataComputing)
+library(mosaic)
+library(ggplot2)
+```
+
+```{r}
+# Wrangle data
+rawdata <- read.csv("DisasterDeclarationsSummaries.csv")
+data <- rawdata %>% filter(declarationType == "DR") %>% filter(fyDeclared > 1953) %>% filter(fyDeclared < 2020) %>% select(fyDeclared, disasterNumber)
+data <- data %>% group_by(fyDeclared, disasterNumber) %>% distinct()
+data <- data %>% group_by(fyDeclared) %>% mutate(count = n())
+data
+```
+
+```{r}
+# Generate graph
+declarationGraph <- ggplot(data, aes(x=fyDeclared)) + geom_histogram(fill = 'gold1', color = 'goldenrod1') + labs(title = "Major Disaster Declarations", y = '', x = 'Year') + scale_x_continuous(breaks = c(1955, 1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020)) + scale_y_continuous(breaks = c(0, 25, 50, 75, 100, 125, 150, 175))
+declarationGraph
+ggsave("MajorDisasterDeclarations.png", declarationGraph)
+
+```
+
+```{r}
+# Wrangle public assistance data
+padata <- read.csv("PublicAssistanceData.csv")
+padata <- padata %>% select(stateCode, declarationDate, damageCategoryCode, projectAmount)
+padata$declarationDate <- substr(padata$declarationDate, 0, 4)
+padata
+```
+
+```{r}
+# Aggregate
+padata <- padata %>% select(declarationDate, projectAmount) %>% group_by(declarationDate) %>% mutate(yearTotal = sum(projectAmount))
+padata %>% select(declarationDate, yearTotal) %>% unique()
+```
+
+```{r}
+# Generate graph
+yearGraph <- ggplot(padata, aes(x=declarationDate, y=yearTotal, group=1)) + geom_line() + labs(title="Yearly FEMA Public Assistance", y = "Total", x = "Year") + scale_x_discrete(breaks = c(1955, 1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020))
+yearGraph
+ggsave("yearGraph.png")
+```
+
+
+
