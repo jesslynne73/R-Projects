@@ -1,0 +1,43 @@
+---
+title: "Computing FEMA PA Distribution"
+author: "Jess Strait"
+output: html_notebook
+---
+
+# Front Matter
+
+```{r}
+rm(list = ls())
+
+# load packages
+library(DataComputing)
+library(mosaic)
+library(tidyverse)
+library(ggplot2)
+library(scales)
+
+# Intake data
+StateData1 <- read.csv(file = "PublicAssistanceData.csv")
+```
+
+
+```{r}
+# Wrangle and aggregate data
+StateData <- StateData1 %>% select(stateCode, declarationDate, damageCategoryCode, projectAmount)
+StateData$declarationDate <- substr(StateData$declarationDate, 0, 10)
+StateData <- StateData %>% filter(declarationDate > 2000) %>% group_by(stateCode) %>% mutate(stateTotal = sum(projectAmount))
+StateData
+```
+
+```{r}
+# Format
+StateData <- StateData %>% select(stateCode, stateTotal) %>% unique()
+StateData <- StateData %>% arrange(-stateTotal)
+StateData
+```
+
+
+```{r}
+write.csv(StateData, "StateDataRank.csv")
+```
+
