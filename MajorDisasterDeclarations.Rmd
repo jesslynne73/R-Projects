@@ -1,8 +1,11 @@
 ---
 title: "Major Disaster Declarations"
-author: "Jess Strait"
+author: "Jess Strait for Crisis Track"
 output: html_notebook
 ---
+# The use case for this program is to intake FEMA data describing disaster declarations, and to aggregate the data to graph disaster declarations per year.
+# The second half of the program computes and graphs FEMA public assistance funding for each year.
+
 
 # Front Matter
 
