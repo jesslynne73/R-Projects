@@ -4,7 +4,7 @@ author: "Jess Strait for Crisis Track"
 output: html_notebook
 ---
 # The use case for this program is to intake FEMA data describing disaster declarations, and to aggregate the data to graph disaster declarations per year.
-# The second half of the program computes and graphs FEMA public assistance funding for each year.
+# The second half of the program computes and graphs FEMA public assistance funding for each year, as well as computing disaster declarations by county.
 
 
 # Front Matter
@@ -55,6 +55,60 @@ yearGraph <- ggplot(padata, aes(x=declarationDate, y=yearTotal, group=1)) + geom
 yearGraph
 ggsave("yearGraph.png")
 ```
+```{r}
+# Wrangle data to compute states with the most counties receiving public assistance
+rawdata <- read.csv("DisasterDeclarationsSummaries.csv")
+data2 <- rawdata %>% filter(paProgramDeclared == 1, declarationType == 'DR', fyDeclared > 1999)
+data2 <- data2 %>% select(state, designatedArea) %>% unique()
+data2 <- data2 %>% group_by(state) %>% count()
+data2 %>% arrange(-n)
+write.csv(data2, "StatesWithMostCountiesReceivingPASince2000.csv")
+```
+
+```{r}
+# Wrangle population data
+population <- read.csv("StatePop.csv")
+population$State <- state2abbr(population$State)
+population$pop <- population$X2018.Population
+population$state <- population$State
+population <- population %>% select(state, pop)
+population
+```
+```{r}
+# Compute disaster declarations per capita
+data3 <- rawdata %>% filter(declarationType == 'DR') %>% select(declarationDate, state)
+data3$declarationDate <- substr(data3$declarationDate, 0, 4)
+data3 <- data3 %>% group_by(state) %>% filter(declarationDate >1999) %>% mutate(n = n())
+data3
+newdata <- merge(population, data3, by = "state")
+newdata <- newdata %>% mutate(perCap = (n/pop)*100000) %>% select(state, n, perCap) %>% unique()
+# perCap = x number of disasters per 100,000 people
+newdata %>% arrange(-perCap)
+write.csv(newdata, "DisasterDeclarationsPer100kPeopleSince2000.csv")
+```
+
+```{r}
+# Compute disaster declarations by state per year
+drdata <- rawdata %>% select(state, declarationType, declarationDate)
+drdata$declarationDate <- substr(drdata$declarationDate, 0, 4)
+drdata <- drdata %>% filter(declarationType == "DR") %>% group_by(state, declarationDate) %>% mutate(yearStateSum = n())
+drdata <- drdata %>% select(state, declarationDate, yearStateSum) %>% arrange(declarationDate, state) %>% unique()
+drdata
+write.csv(drdata, "DRByStateByYear.csv")
+```
+
+```{r}
+# Compute disaster declarations by county per year
+groupdata <- rawdata %>% filter(declarationType == 'DR') %>% select(state, declarationDate, designatedArea)
+groupdata$declarationDate <- substr(groupdata$declarationDate, 0, 4)
+groupdata20 <- groupdata %>% filter(declarationDate > 1999) %>% group_by(state, declarationDate, designatedArea) %>% mutate(aggregateSum = n()) %>% arrange(-aggregateSum) %>% unique()
+groupdata10 <- groupdata %>% filter(declarationDate > 2009) %>% group_by(state, declarationDate, designatedArea) %>% mutate(aggregateSum = n()) %>% arrange(-aggregateSum) %>% unique()
+groupdata20 
+groupdata10
+write.csv(groupdata20, "CountyStateYearAggregate20.csv")
+write.csv(groupdata10, "CountyStateYearAggregate10.csv")
+```
+
 
 
 
