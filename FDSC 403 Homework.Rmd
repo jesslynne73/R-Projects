@@ -1,0 +1,100 @@
+---
+title: "FDSC 403 Problem Set"
+author: "Jess Strait"
+output: html_notebook
+---
+
+```{r}
+# Front Matter
+rm(list = ls())
+
+library(plotrix)
+library(ggplot2)
+library(dplyr)
+corn <- read.csv("corndata.csv")
+corn$XSweet <- corn$ï..XSweet
+corn$ï..XSweet <- NULL
+```
+
+Compute Pearson's R for all relationships
+```{r}
+sweetsugarcor <- cor(corn$XSweet, corn$YSugar, method='pearson')
+sweetsugarp <- cor.test(corn$XSweet, corn$YSugar)$p.value
+
+sweetstarchcor <- cor(corn$XSweet, corn$ZStarchy, method='pearson')
+sweetstarchp <- cor.test(corn$XSweet, corn$ZStarchy)$p.value
+
+sugarstarchcor <- cor(corn$YSugar, corn$ZStarchy, method='pearson')
+sugarstarchp <- cor.test(corn$YSugar, corn$ZStarchy)$p.value
+```
+
+
+
+1: What is the r and p for the relationship between perceived sweetness and sugar content?
+```{r}
+print(paste0("r = ", sweetsugarcor))
+print(paste0("p = ", sweetsugarp))
+```
+
+
+
+2: What is the r and p for the relationship between perceived starchiness and sugar content?
+```{r}
+print(paste0("r = ", sugarstarchcor))
+print(paste0("p = ", sugarstarchp))
+```
+
+
+
+3: What is the r and p for the relationship between perceived sweetness and perceived starchiness?
+```{r}
+print(paste0("r = ", sweetstarchcor))
+print(paste0("p = ", sweetstarchp))
+```
+
+
+
+4: Are any of these relationships significant at alpha = 0.05? If so, which ones?
+
+With an alpha of 0.05, we see that the relationship between perceived sweetness and sugar content is statistically significant with a p-value of ~0.004. We also see that the relationship between perceived starchiness and sugar content is statistically significant with a p-value of ~0.02. 
+
+
+
+5: Plot the relationship between perceived sweetness and sugar content. Put sugar on the x-axis.
+```{r}
+ggplot(corn, aes(x=YSugar, y=XSweet)) + geom_point(size=2, color="forest green") +labs(title="Relationship Between Perceived Sweetness and Sugar Content", x="Sugar Content", y="Perceived Sweetness") + scale_y_continuous(limits = c(0, 20)) + theme_bw()
+```
+
+
+
+6: Plot the relationship between perceived starchiness and sugar content. Put sugar on the x-axis.
+```{r}
+ggplot(corn, aes(x=YSugar, y=ZStarchy)) + geom_point(size=2, color="brown") +labs(title="Relationship Between Perceived Starchiness and Sugar Content", x="Sugar Content", y="Perceived Starchiness") + scale_y_continuous(limits=c(0, 11.5)) + theme_bw()
+```
+
+
+
+7: Plot the relationship between perceived starchiness and perceived sweetness. Put sweetness on the x-axis.
+```{r}
+ggplot(corn, aes(x=XSweet, y=ZStarchy)) + geom_point(size=2, color="red") +labs(title="Relationship Between Perceived Sweetness and Perceived Starchiness", x="Perceived Sweetness", y="Perceived Starchiness") + scale_y_continuous(limits = c(0, 11.5)) + theme_bw()
+```
+
+
+
+8: What conclusions/recommendations do you have for your colleague the plant scientist?
+
+I would tell the plant scientist that we can conclude that sugar content has a positively correlated significant relationship with perceived sweetness, so corn with a higher sugar content will be perceived as sweeter. Contrarily, perceived starchiness and sugar content have a significant negatively correlated relationship, so corn with a high sugar content will be perceived as less starchy. The associative inference that can be made between these two conclusions is that corn that is perceived as sweeter will generally be perceived as less starchy- however, the relationship between those two variables is not statistically significant. Generally, the plant scientist should know that corn with higher sugar content will be perceived as sweeter and less starchy; corn with a lower sugar content will be perceived as starchier and less sweet.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
