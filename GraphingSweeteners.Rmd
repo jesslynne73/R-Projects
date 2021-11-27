@@ -1,5 +1,5 @@
 ---
-title: "FDSC 403 Graphs"
+title: "Graphing Sweeteners"
 output: html_notebook
 author: Jess Strait
 ---
