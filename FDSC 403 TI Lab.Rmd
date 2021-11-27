@@ -1,0 +1,73 @@
+---
+title: "Time Intensity of Tabasco Sauce Lab"
+author: "Jess Strait"
+output: html_notebook
+---
+
+
+```{r}
+# Front Matter
+rm(list = ls())
+
+library(stats)
+library(ggplot2)
+data <- read.csv("crackerdata.csv")
+```
+
+```{r}
+# Split dataset into room temp and chilled Tabasco
+roomdata <- data[1:4]
+roomdata$RoomPanelist <- roomdata$'ï..RoomPanelist'
+roomdata$'ï..RoomPanelist' <- NULL
+
+chilldata <- data[6:9]
+```
+
+```{r}
+# View summary statistics
+print(summary(roomdata[1:3]))
+print(summary(chilldata[2:4]))
+```
+
+```{r}
+ggplot() + geom_boxplot(chilldata, mapping=aes(x=1, y=ChillAUC, color="Chilled")) + geom_boxplot(roomdata, mapping=aes(x=2, y=RoomAUC, color="Room Temp"))  + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + ylab("Area Under the Curve") + ggtitle("Comparing AUC of Serving Temperatures")
+```
+
+```{r}
+ggplot() + geom_boxplot(chilldata, mapping=aes(x=1, y=ChillTmax, color="Chilled")) + geom_boxplot(roomdata, mapping=aes(x=2, y=RoomTmax, color="Room Temp"))  + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + ylab("Time of Maximum Perceived Intensity") + ggtitle("Comparing Tmax of Serving Temperatures")
+```
+
+```{r}
+ggplot() + geom_boxplot(chilldata, mapping=aes(x=1, y=ChillImax, color="Chilled")) + geom_boxplot(roomdata, mapping=aes(x=2, y=RoomImax, color="Room Temp"))  + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + ylab("Maximum Perceived Intensity") + ggtitle("Comparing Imax of Serving Temperatures")
+```
+
+
+```{r}
+# Conduct paired t-tests for each scaffolding parameter across
+t.test(roomdata$RoomTmax, chilldata$ChillTmax, paired=TRUE)
+```
+
+For the paired t-test of Tmax, the p-value is greater than 0.05, so it does not allow us to reject the null hypothesis.
+
+```{r}
+t.test(roomdata$RoomImax, chilldata$ChillImax, paired=TRUE)
+```
+
+The paired t-test for Imax has a significant p-value. This means it is statistically unlikely for us to see a t-value of 2.8971 under the null hypothesis. Therefore, we can reject the null hypothesis and conclude there is a significant difference for Imax between room temperature and chilled Tabasco sauce.
+
+```{r}
+t.test(roomdata$RoomAUC, chilldata$ChillAUC, paired=TRUE)
+```
+
+The paired t-test for AUC has a significant p-value. This means it is statistically unlikely for us to see a t-value of 3.3884 under the null hypothesis. Therefore, we can reject the null hypothesis and conclude there is a significant difference for AUC between room temperature and chilled Tabasco sauce.
+
+
+
+
+
+
+
+
+
+
+
