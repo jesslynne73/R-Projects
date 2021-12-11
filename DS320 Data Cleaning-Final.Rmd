@@ -1,0 +1,182 @@
+---
+title: "DS 320 FEMA & Census EDA"
+output: html_notebook
+---
+
+```{r}
+# Front Matter
+rm(list = ls())
+
+# Load packages
+library(DataComputing)
+library(mosaic)
+library(ggplot2)
+library(openintro)
+library(dplyr)
+library(stringr)
+library(choroplethr)
+library(usmap)
+library(choroplethrMaps)
+library(reshape2)
+```
+
+```{r}
+# Load datasets from FEMA and the United States Census
+rawdata <- read.csv("DisasterDeclarationsSummaries.csv")
+censusdata <- read.csv("county_census_data.csv")
+PublicAssistanceData <- read.csv("PublicAssistanceData.csv")
+
+# Select census variables of interest
+census <- censusdata %>% dplyr::select(State, County, TotalPop, Men, Women, Hispanic, White, Black, Native, Asian, Pacific, Income, Poverty, Unemployment)
+
+# Filter dataset to 2000 or later where public assistance funding did occur; limit dataset to county data
+data <- rawdata %>% filter(declarationType != "FM") %>% filter(fyDeclared > 1999) %>% filter(paProgramDeclared == 1) %>% filter(designatedArea != 'Statewide') %>% dplyr::select(designatedArea, state, fipsCountyCode, fipsStateCode) 
+
+# Clean county variable for FIPS code integration
+data$designatedArea <- str_remove_all(data$designatedArea, "(County)")
+data$designatedArea <- str_remove_all(data$designatedArea, "(Parish)")
+data$designatedArea <- str_remove_all(data$designatedArea, "(Township)")
+data$designatedArea <- gsub("\\(", " ", data$designatedArea)
+data$designatedArea <- gsub("\\)", " ", data$designatedArea)
+
+# Compute count of disasters per county
+disaster_data <- data %>% group_by(designatedArea, state) %>% mutate(count = n()) %>% unique()
+
+# Prepare for FIPS code integration
+disaster_data$full_county <- paste0(str_trim(disaster_data$designatedArea),sep = " ", disaster_data$state)
+census$county <- census$County
+census$state <- census$State
+
+# Limit public assistance dataset to 2000 or later
+PublicAssistanceData$declarationDate <- substr(PublicAssistanceData$declarationDate, 0, 4)
+PublicAssistanceData <- PublicAssistanceData %>% filter(declarationDate > 1999)
+padata <- PublicAssistanceData %>% dplyr::select(state, stateCode, disasterNumber, county, totalObligated, countyCode) %>% group_by(disasterNumber, county, state) %>% unique()
+
+# Compute county total public assistance obligated
+padata <- padata %>% group_by(county, state) %>% mutate(county_disaster_count = n()) %>% mutate(countyObligated = sum(totalObligated))
+padata <- padata %>% group_by(county, state) %>% dplyr::select(county, state, county_disaster_count, countyObligated, countyCode, stateCode) %>% unique()
+padata$full_county <- paste0(padata$county, sep=" ", padata$stateCode)
+
+# Merge census and FEMA public assistance data
+newdata <- merge(padata, census, by=c("county", "state"))
+newdata$County <- NULL
+newdata$State <- NULL
+newdata <- newdata %>% mutate(county_disasters_perCap = county_disaster_count/TotalPop) %>% mutate(county_obligated_perCap = countyObligated/TotalPop)
+newdata <- newdata %>% unique() %>% arrange(-county_obligated_perCap)
+
+# Create dataset for mapping
+mappingdata <- merge(newdata, disaster_data, by=c("full_county"))
+```
+
+```{r}
+# Use R package to bring in FIPS codes for every county
+for (row in 1:nrow(mappingdata)){
+  mappingdata$region[[row]] <- 0
+  newfips <- 0
+  try(newfips <- fips(mappingdata$state.x[[row]], mappingdata$county[[row]]))
+  mappingdata$region[[row]] <- newfips
+}
+write.csv(mappingdata, "DS320Census-FEMA-Final.csv")
+
+# Exploratory Data Analysis
+
+# Fix "value" and "region" variables to create choropleth maps
+mappingdata$value <- mappingdata$county_obligated_perCap
+mappingdata <- mappingdata %>% group_by(county, state.x) %>% unique()
+
+# Compute a diversity metric as a sum of all racial minority population percentages
+mappingdata <- mappingdata %>% rowwise() %>% mutate(diversity = sum(Black, Hispanic, Native, Asian, Pacific))
+mappingdata$region <- mappingdata$region %>% as.double()
+```
+
+```{r}
+penn <- mappingdata %>% filter(state.x == "Pennsylvania")
+
+# Create map of Pennsylvania for public assistance funding
+county_choropleth(penn, title = "Public Assistance Per Capita in Pennsylvania", legend = "Dollars Per Capita", state_zoom = "pennsylvania")
+```
+
+
+```{r}
+penn$value <- penn$diversity
+county_choropleth(penn, title = "Racial Minority Population Density for Pennsylvania Counties", legend = "% of Population Identifying as a Racial Minority", state_zoom = "pennsylvania")
+```
+
+```{r}
+penn$value <- penn$Income
+county_choropleth(penn, title = "Median Household Income for Pennsylvania Counties", legend = "Median Household Income", state_zoom = "pennsylvania")
+```
+
+```{r}
+cor(penn[, c('county_obligated_perCap', 'Income', 'diversity', 'county_disaster_count', 'county_disasters_perCap', 'Poverty')])
+```
+
+```{r}
+# Create heatmap to visualize Pennsylvania correlation matrix
+pennheat <- penn %>% select(county_obligated_perCap, Income, Poverty, diversity, county_disaster_count, county_disasters_perCap)
+
+pennheat$state.x <- NULL
+pennheat$county <- NULL
+
+cormatrix <- melt(round(cor(pennheat), 2))
+ggplot(data = cormatrix, aes(x=Var1, y=Var2, fill=value)) + geom_tile() + scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, limit = c(-1,1), space = "Lab", name="Pearson\nCorrelation") + theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1)) + labs(title = "Pennsylvania Correlation Heat Map")
+```
+
+
+```{r}
+# Explore California state data as a correlation matrix
+cal <- mappingdata %>% filter(state.x == "California")
+cor(cal[, c('county_obligated_perCap', 'Income', 'diversity', 'county_disaster_count', 'county_disasters_perCap', 'Poverty')])
+```
+
+```{r}
+# Create choropleth map of California public assistance funding
+county_choropleth(cal, title = "Public Assistance Per Capita in California", legend = "Dollars Per Capita", state_zoom = "california")
+```
+
+
+```{r}
+# Create choropleth map of California diversity
+cal$value <- cal$diversity
+county_choropleth(cal, title = "Racial Minority Population Density for California Counties", legend = "% of Population Identifying as a Racial Minority", state_zoom = "california")
+```
+
+```{r}
+# Create choropleth map of California income
+cal$value <- cal$Income
+county_choropleth(cal, title = "Median Household Income for California Counties", legend = "Median Household Income", state_zoom = "california")
+```
+
+
+```{r}
+# Conduct correlation testing to evaluate impact of diversity and income on California public assistance funding
+cor.test(cal$county_obligated_perCap, cal$diversity)
+cor.test(cal$county_obligated_perCap, cal$Income)
+```
+
+```{r}
+# Create a heatmap to visualize California correlation matrix
+calheat <- cal %>% select(county_obligated_perCap, Income, Poverty, diversity, county_disaster_count, county_disasters_perCap)
+
+calheat$state.x <- NULL
+calheat$county <- NULL
+
+cormatrix <- melt(round(cor(calheat), 2))
+ggplot(data = cormatrix, aes(x=Var1, y=Var2, fill=value)) + geom_tile() + scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, limit = c(-1,1), space = "Lab", name="Pearson\nCorrelation") + theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1)) + labs(title = "California Correlation Heat Map")
+```
+
+
+
+```{r}
+# Compute states with highest overall public assistance dollars obligated since 2000
+total_ob <- mappingdata %>% group_by(state.x) %>% summarise(total_obligated = sum(countyObligated)) %>% arrange(desc(total_obligated)) %>% head(10)
+ggplot(total_ob, aes(x=reorder(state.x, -total_obligated), y=total_obligated, fill=state.x)) + geom_bar(stat='identity') + theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1)) + labs(title = "States with Top 10 Highest Public Assistance Dollars", x = "State", y="Dollars Obligated") + theme(legend.position = "none")
+```
+
+```{r}
+# Compute states with highest per capita public assistance funding since 2000
+percap_ob <- mappingdata %>% group_by(state.x) %>% summarise(percap_obligated = sum(county_obligated_perCap)) %>% arrange(desc(percap_obligated)) %>% head(10)
+ggplot(percap_ob, aes(x=reorder(state.x, -percap_obligated), y=percap_obligated, fill=state.x)) + geom_bar(stat='identity') + theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1)) + labs(title = "States with Top 10 Highest Per Capita Public Assistance Dollars", x = "State", y="Dollars Obligated Per Capita") + theme(legend.position = "none")
+```
+
+
