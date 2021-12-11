@@ -3,6 +3,8 @@ title: "DS 320 FEMA & Census EDA"
 output: html_notebook
 ---
 
+This project is an exploratory data analysis and integration of census and FEMA public assistance data for DS 320: Data Integration & Fusion at Penn State.
+
 ```{r}
 # Front Matter
 rm(list = ls())
