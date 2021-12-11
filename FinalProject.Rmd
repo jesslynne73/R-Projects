@@ -1,0 +1,158 @@
+---
+title: "Final Project: World Happiness Index"
+author: "Jessica Strait"
+date: "4-24-2020"
+output: html_notebook
+--- 
+
+## Front Matter
+
+```{r} 
+rm(list = ls())
+
+# load packages
+library(mosaic)
+library(tidyverse)
+library(party)
+```
+
+## Guiding Questions
+
+* **Which regions of the world are the happiest and why?**
+  + *Which countries have seen a large change in happiness from 2018 to 2019?*
+  + *What role does the residual play across countries and continents?*
+
+## Data Access
+
+```{r}
+# Import the data sets for years 2018 and 2019
+data2018 <- read.csv("C:\\Users\\jessl\\Desktop\\2018.csv")
+data2019 <- read.csv("C:\\Users\\jessl\\Desktop\\2019.csv")
+```
+
+```{r}
+# Import supporting data from R packages: we need continent information and also the WorldMap() visualization provided by DataComputing.
+install.packages("countrycode")
+library(countrycode)
+library(DataComputing)
+```
+
+```{r}
+# Inspect my primary data sources
+head(data2018, 5)
+tail(data2018, 5)
+count(data2018)
+names(data2018)
+str(data2018)
+```
+
+
+## Data Wrangling
+
+```{r}
+# Use a join to merge data from 2018 and 2019. Note that variables with .x are from 2018, and .y are from 2019.
+Happiness <- data2018 %>% left_join(data2019, by = c("Country.or.region" = "Country.or.region"))
+head(Happiness, 10)
+```
+
+```{r}
+# Convert country variable to a string so we can use the countrycode package. Double-check that it worked.
+Happiness$Country.or.region <- as.character(Happiness$Country.or.region)
+class(Happiness$Country.or.region)
+```
+
+```{r}
+# Time to start assigning continents to countries! I'll create a new variable using the countrycode package to assign the continents.
+Happiness <- Happiness %>% mutate(Continent = countrycode(sourcevar = Happiness$Country.or.region, origin = "country.name", destination = "continent"))
+Happiness
+```
+
+```{r}
+# Let's look at some quick stats about our data table for 2018. We will want this information to do some predictions with machine learning.
+favstats(~ Score.x, data = Happiness)
+```
+
+```{r}
+# Looking at the 2018 data, let's see how much of a contributing factor the Continent is. We know there are 152 cases by our favstats() function.
+# First, turn our Continent variable into a factor so that we can run the ctree() function on it.
+Happiness$Continent <- as.factor(Happiness$Continent)
+# Use machine learning techniques from the party R package. We are conditioning on Continent and measuring the probability of a country being in the top 50% of happiest countries. This will help us answer our primary research question, regarding what regions of the world are the happiest.
+happy_continents2018 <- ctree(Overall.rank.x < (152/2) ~ Continent, data = Happiness)
+# We will plot the decision tree in the data visualization section. Let's take a look at the binary tree we've created for now.
+happy_continents2018
+```
+
+```{r}
+# Now, for a secondary research question, we need to compute the residual (the difference between the overall happiness score and the sum of the defined contributing factors) for each country for each year. We will use mutate and several transformation verbs to do this. Recall that .x implies 2018 and .y implies 2019 data.
+Happiness <- Happiness %>% mutate(Residual.x = Score.x - (as.numeric(GDP.per.capita.x) + as.numeric(Social.support.x) + as.numeric(Healthy.life.expectancy.x) + as.numeric(Freedom.to.make.life.choices.x) + as.numeric(Generosity.x) + as.numeric(levels(Perceptions.of.corruption.x))[Perceptions.of.corruption.x]))
+Happiness <- Happiness %>% mutate(Residual.y = Score.y - (as.numeric(GDP.per.capita.y) + as.numeric(Social.support.y) + as.numeric(Healthy.life.expectancy.y) + as.numeric(Freedom.to.make.life.choices.y) + as.numeric(Generosity.y) + as.numeric(Perceptions.of.corruption.y)))
+# Select some variables and check that it worked
+Happiness %>% select(Country.or.region, Continent, Score.x, Score.y, Residual.x, Residual.y)
+```
+
+```{r}
+# Let's use the 2018 data and see what countries had the highest residual values.
+ResidualTable <- Happiness %>% arrange(desc(Residual.x)) %>% select(Country.or.region, Residual.x, Continent, Score.x) %>% group_by(Continent) %>%
+  summarise(ContinentResidual = mean(Residual.x, na.rm = TRUE), ContinentAverage = mean(Score.x)) %>% na.omit()
+# This gives us information on the actual average happiness per continent in addition to the average residual value for that continent in 2018. However, because continents with a lower overall average score will obviously also have a lower average residual, we are more interested in the proportion of residual to average happiness score.
+ResidualTable %>% mutate(ResidualProportion = ContinentResidual/ContinentAverage) %>% arrange(desc(ResidualProportion))
+```
+From this data table, we learned that almost half of the happiness score in African countries is residual: meaning, it did not fall into one of the pre-defined contributing factors. Could this be an effect of Western countries' information gathering insufficiently understanding what happiness is to non-Western citizens?
+
+```{r}
+# For our final data wrangling task, we will address the secondary research question on which countries have seen a significant change in happiness from 2018 to 2019. To make the resulting data table easier to view, we will use spread/gather and regex methods on our data..
+# Use gather to create one variable with values of either Score.x or Score.y, indicating 2018 or 2019
+MiniHappiness <- Happiness %>% gather(key = when, value = score, Score.x, Score.y)
+# Use gsub to rename "Score.x" and "Score.y" with their corresponding years
+MiniHappiness <- MiniHappiness %>% mutate(when = gsub(pattern = "Score.x", replacement = "Year2018", MiniHappiness$when))
+MiniHappiness <- MiniHappiness %>% mutate(when = gsub(pattern = "Score.y", replacement = "Year2019", MiniHappiness$when))
+# Now that I've renamed my variables, I'll convert the data to a more concise, wide data frame.
+MiniHappiness <- MiniHappiness %>% spread(key = when, value = score) %>% select(Country.or.region, Year2018, Year2019)
+# Now, let's do an operation to find which countries had significant changes.
+MiniHappiness <- MiniHappiness %>% mutate(difference = Year2018-Year2019) 
+MiniHappiness %>% filter(abs(difference) > 0.5)
+```
+I've found four countries with a change of more than half a point. One of these countries became significantly less happy- was there some type of war or civil unrest that could explain this? The three remaining countries all enjoyed an increase in happiness.
+
+## Data Visualization
+
+```{r}
+# First, let's plot the decision tree we created earlier.
+plot(happy_continents2018, type = "simple")
+```
+To read this decision tree, note that n = the number of countries in a node (i.e. a continent) and y = the probability of a country in that node to be in the happiest 50% of countries. Countries in the Americas, Europe, and Oceania have an 81% chance of being in the top 50%, countries in Asia have a 44.5% chance, and countries in Africa have less than a 5% chance. We can tell from this decision tree that simply knowing the continent of a country allows us to make a reasonable prediction on how happy that country is relative to the rest of the world. Obviously, Happiness varies as a function of the continent on which a citizen resides.
+
+```{r}
+# Before we start mapping, I want to make a scatterplot of happy countries as a function of continent. We saw some clear grouping in our data wrangling phase, but let's visualize what we learned before tackling something more complicated.
+Happiness <- Happiness %>% mutate(ResidualProportion2018 = Residual.x/Score.x)
+Happiness %>% na.omit() %>% ggplot(aes(x = Score.x, y=Score.y)) + geom_point() + aes(colour = ResidualProportion2018, shape = Continent) + facet_wrap(~Continent, ncol=4) + xlab("2018 Happiness Score") + ylab("2019 Happiness Score")
+```
+I chose to separate the data by continent, both with the facet wrap and with shape aesthetics. I also wanted to show the residual values with respect to individual African countries, rather than the whole continent as I showed earlier. This graph confirms my assessment that African countries in general have higher proportions of the overall happiness score from the residual factor. The hypothesis that this may be occurring as a result of Westernized data collection being unable to appreciate non-Western cultural factors would be worth investigating in an expansion of this project. This visualization also shows what we have learned from data wrangling: the Americas, Europe, and Oceania are the happiest continents, and Africa is the unhappiest continent. We learn from the visualization that Europe has the widest range of happiness values, probably as a result of grouping Western and Eastern European countries into one continent despite drastically different economic and social practices between those regions. Separating those regions as well as North and South America may be worthwhile in an expansion of this study.
+
+```{r}
+# Now that we've seen the individual data points for the countries, let's use a bar graph to easily compare the average happiness scores for each continent.
+ContinentData <- Happiness %>% na.omit() %>% group_by(Continent) %>% summarise(happycontinent2019 = mean(Score.x))
+ggplot(data = ContinentData, aes(x = reorder(Continent, happycontinent2019), y = happycontinent2019, fill = Continent)) + geom_bar(stat = 'identity', position = 'stack', width = .9) + xlab("Continent") + ylab("Average Happiness Score 2018") 
+```
+This bar graph gives us an easy visualization of the average happiness for each overall continent, while the scatterplot gave us a better understanding of each country's happiness within a continent.
+
+```{r}
+# Finally, let's create a choropleth map of our data. I thought about using a more challenging way to map (namely, the rworldmap package), but then I considered why I was making the map. The goal of the map was to give a visualization of the happiest countries in the world. Why make it more complicated than it needed to be, when I could use a very simple DataComputing tool we learned in the course? First, 2018 data:
+Happiness %>% na.omit() %>% WorldMap(key = Country.or.region, fill = Score.x)
+```
+```{r}
+# And lastly, 2019 data:
+Happiness %>% na.omit() %>% WorldMap(key = Country.or.region, fill = Score.y)
+```
+Looking at these maps allows us to graphically present the answer to my overarching research question. We have done the wrangling, and here is what we've learned: now, let's show which continents are happiest with a number of visualizations so the next researcher doesn't have to complete the same wrangling tasks. The Americas, Europe, and Oceania are the happiest continents, and Africa is the unhappiest continent.
+
+The guiding questions of this project all contributed to a better understanding of who is happiest in this world and why this is the case. In addition to achieving the overall goal of understanding which continent is the happiest, we also computed a residual value: a type of happiness that we can't understand with data analysis just yet. We also explored which countries experienced significant social change between 2018 and 2019, identifying those who experienced a notable shift in happiness. In a world connected by constant data mining and research, I wanted to investigate the question of who truly perceives themselves as the happiest, as well as identify what sources and changes in happiness weren't explained by this Westernized dataset.
+
+The greatest challenge I faced in this project was determining how to create an effective map of the data. I could not use a leaflet map because, unless I assigned a specific point in each country, I did not have longitude and latitude data sufficient to indicate an entire country. I considered using rworldmap or another package, and it wasn't until I reviewed an old homework assignment that I recalled the effortless WorldMap() option in ggplot2 from the DataComputing package. For purposes of my assignment, I decided this was entirely sufficient to communicate my results. While another method might have been more "impressive" in my data manipulation to a grader, it would've yielded the exact same map at the end of the day, just with more work for me and more for the grader to read. I'm currently taking an ArcGIS course on geospatial technology and making great maps, and a key lesson we've learned from that course is to get your map's message across as clearly as possible.
+
+## Links to Data Sources
+
+https://worldhappiness.report/ for the history of the project and appendices describing statistical measures taken.
+https://www.kaggle.com/unsdsn/world-happiness for a general summary of each factor and downloadable data for each year.
+https://cran.r-project.org/web/packages/countrycode/countrycode.pdf for documentation on the countrycode R package and how it can be used.
+https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html for documentation on how to use ggplot2 and the world map function.
